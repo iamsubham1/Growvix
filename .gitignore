@@ -1,0 +1,15 @@
+
+/target/
+/.settings/
+/.project
+/.classpath
+/node_modules
+public/
+dist/
+/*.zip
+nodemon.json
+package-lock.json
+.env
+
+Dockerfile
+.env
