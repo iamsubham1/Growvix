@@ -10,12 +10,13 @@ export interface CreatorModel extends mongoose.Document {
     name: string;
     email: string;
     phnumber: string;
-    profilePicture: string;
+    avatar: string;
     address: Address;
-    socialMediaLink: string;
     status: boolean;
     subscription: string;
     creatorType: string;
+    longitude?: number;
+    latitude?: number;
 }
 
 const addressSchema = new mongoose.Schema({
@@ -41,15 +42,13 @@ const creatorSchema = new mongoose.Schema(
         phnumber: {
             type: String,
         },
-        profilePicture: {
+        avatar: {
             type: String,
         },
         address: {
             type: addressSchema,
         },
-        socialMediaLink: {
-            type: String,
-        },
+
         status: {
             type: Boolean,
         },
@@ -57,6 +56,8 @@ const creatorSchema = new mongoose.Schema(
             type: String,
             enum: ['Influencer', 'Editor', 'Videographer'],
         },
+        longitude: { type: Number },
+        latitude: { type: Number },
 
     },
     {
@@ -65,6 +66,5 @@ const creatorSchema = new mongoose.Schema(
     },
 );
 
-const Creator = mongoose.model<CreatorModel>('Creator', creatorSchema);
+export const Creator = mongoose.model<CreatorModel>('Creator', creatorSchema);
 
-export default Creator;

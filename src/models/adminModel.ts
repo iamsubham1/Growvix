@@ -6,6 +6,7 @@ export interface AdminModel extends mongoose.Document {
     email: string;
     password: string;
     role: string;
+    businessList: String[];
 }
 
 const adminSchema = new mongoose.Schema(
@@ -26,6 +27,9 @@ const adminSchema = new mongoose.Schema(
             type: String,
             enum: ['ADMIN', 'SUBADMIN'],
         },
+        businessList: {
+            type: [String]
+        }
     },
     {
         collection: 'admin',

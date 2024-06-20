@@ -16,9 +16,10 @@ export interface UserModel extends Document {
     avatar: string;
     verified_email: string;
     facebookLink?: string;
-    longitude?: number; // Add longitude field
-    latitude?: number; // Add latitude field
-    status: string
+    longitude?: number;
+    latitude?: number;
+    status: string;
+    tokens: string;
 }
 
 const userSchema = new Schema<UserModel>(
@@ -37,8 +38,12 @@ const userSchema = new Schema<UserModel>(
         picture: { type: String },
         google_id: { type: String },
         avatar: { type: String },
-        longitude: { type: Number }, // Add longitude field
-        latitude: { type: Number }, // Add latitude field
+        longitude: { type: Number },
+        latitude: { type: Number },
+        tokens: {
+            type: String,
+            enum: ["FACEBOOK", "INSTAGRAM", "GOOGLE"]
+        },
         status: {
             type: String,
             enum: ['ACTIVE', 'SUSPENDED']
