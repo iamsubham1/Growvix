@@ -240,22 +240,26 @@ export class UserService {
 
     uploadUserProfileImage = async (req: Request, res: Response) => {
         try {
+
             const userId = req.params.id;
+
             if (!userId) {
+                console.log("Invalid userId, sending 400 response...");
                 return responseStatus(res, 400, msg.common.invalidRequest, null);
             }
 
+            const secure_url = await uploadImage(req, res);
+            console.log("secureurl:", secure_url);
 
-            await uploadImage(req, res, userId);
-
-            // const updatedUser = await this.userRepository.updateById(userId, updateData);
-
-            return responseStatus(res, 200, msg.user.fetchedSuccessfully, []);
-            console.log(uploadImage);
+            // Respond with the secure_url upon successful upload
+            return responseStatus(res, 200, 'Uploaded successfully', secure_url);
         } catch (error) {
+            if (error.statusCode) {
+                return responseStatus(res, error.statusCode, error.message, null);
+            }
             console.error('Error uploading profile image:', error);
-            return responseStatus(res, 500, msg.user.fetchFailed, 'An unknown error occurred');
+            console.log("Sending 500 response due to error...");
+            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
         }
     };
-
 }

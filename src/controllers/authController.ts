@@ -1,8 +1,8 @@
-import { UserService } from '../services/userService';
 import { Inject, Service } from 'typedi';
+import { Request, Response } from 'express';
 import { responseStatus } from '../helper/responses';
 import { msg } from '../helper/messages';
-import { Request, Response } from 'express';
+import { UserService } from '../services/userService';
 import { BusinessService } from '../services/businessCategoryServices';
 
 @Service()
@@ -11,6 +11,8 @@ export class AuthController {
         @Inject() private userService: UserService,
         private businessService: BusinessService,
     ) { }
+
+    // User Operations
 
     registerUser = async (req: Request, res: Response) => {
         try {
@@ -60,6 +62,8 @@ export class AuthController {
         }
     };
 
+    // Business Operations
+
     getAllBusinessCategory = async (req: Request, res: Response) => {
         try {
             return await this.businessService.getAll(req, res);
@@ -74,7 +78,7 @@ export class AuthController {
         } catch (error) {
             return responseStatus(res, 500, msg.common.somethingWentWrong, error);
         }
-    }
+    };
 
     updateStatus = async (req: Request, res: Response) => {
         try {
@@ -82,13 +86,17 @@ export class AuthController {
         } catch (error) {
             return responseStatus(res, 500, msg.common.somethingWentWrong, error);
         }
-    }
+    };
+
+    // Image Upload
 
     uploadImg = async (req: Request, res: Response) => {
         try {
-            return await this.userService.uploadUserProfileImage(req, res);
+            const result = await this.userService.uploadUserProfileImage(req, res);
+            return result;
         } catch (error) {
+            console.error('Error uploading profile image:', error);
             return responseStatus(res, 500, msg.common.somethingWentWrong, error);
         }
-    }
+    };
 }
