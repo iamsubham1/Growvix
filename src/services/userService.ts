@@ -8,9 +8,13 @@ import { Inject, Service } from 'typedi';
 import { jwtSignIN } from '../configuration/config';
 import { userObjectCleanUp } from '../helper/utils';
 import * as dotenv from 'dotenv';
+import { Model, Document } from 'mongoose';
+
 dotenv.config();
 import { UserModel, UserSchema } from '../models/userModel';
 import sendEmailWithPassword from '../helper/sendMail';
+import uploadImage from '../helper/uploadImage'; // Import the uploadImage function from your helper
+const UserSchema: Model<UserModel & Document> = require('../models/userModel').model;
 
 @Service()
 export class UserService {
@@ -231,6 +235,26 @@ export class UserService {
         } catch (error) {
             console.error("Error updating business status:", error);
             return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+        }
+    };
+
+    uploadUserProfileImage = async (req: Request, res: Response) => {
+        try {
+            const userId = req.params.id;
+            if (!userId) {
+                return responseStatus(res, 400, msg.common.invalidRequest, null);
+            }
+
+
+            await uploadImage(req, res, userId);
+
+            // const updatedUser = await this.userRepository.updateById(userId, updateData);
+
+            return responseStatus(res, 200, msg.user.fetchedSuccessfully, []);
+            console.log(uploadImage);
+        } catch (error) {
+            console.error('Error uploading profile image:', error);
+            return responseStatus(res, 500, msg.user.fetchFailed, 'An unknown error occurred');
         }
     };
 

@@ -1,8 +1,10 @@
 import { UserModel, UserSchema } from '../models/userModel';
 import { Service } from 'typedi';
+import uploadImage from '../helper/uploadImage'; // Import the uploadImage function from your helper
 
 @Service()
 export class UserRepository {
+
     async save(user: UserModel): Promise<UserModel | null> {
         const userData = new UserSchema(user);
         return new UserSchema(userData).save();
@@ -85,4 +87,6 @@ export class UserRepository {
             new: true,
         }).exec();
     }
+
+
 }

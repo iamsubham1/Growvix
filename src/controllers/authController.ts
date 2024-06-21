@@ -83,4 +83,12 @@ export class AuthController {
             return responseStatus(res, 500, msg.common.somethingWentWrong, error);
         }
     }
+
+    uploadImg = async (req: Request, res: Response) => {
+        try {
+            return await this.userService.uploadUserProfileImage(req, res);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+        }
+    }
 }

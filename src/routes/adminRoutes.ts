@@ -38,6 +38,7 @@ router.route('/findBusiness/:id').get([checkJWT, AdminRoleCheck], authController
 router.route('/deleteBusiness/:id').patch([checkJWT, AdminRoleCheck], authController.deleteUser);//new added tested
 router.route('/updateBusinessStatus/:id').patch([checkJWT, AdminRoleCheck], authController.updateStatus);//new added tested
 router.route('/registerBusiness').post([checkJWT, AdminRoleCheck], validate('body', RegisterUserValidate), authController.registerUser); //new added tested
+router.route('/uploadpic/:id').post([checkJWT, AdminRoleCheck], validate('body', RegisterUserValidate), authController.uploadImg); //new added tested
 
 //employee Routes
 router.route('/getAllEmployee').get([checkJWT, AdminRoleCheck], adminController.getAllEmployee);//new added tested
