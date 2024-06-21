@@ -16,8 +16,8 @@ export class UserRepository {
         }).exec();
     }
 
-    async updateById(_id: string, userData: UserModel): Promise<UserModel | null> {
-        return UserSchema.findOneAndUpdate({ _id: _id }, userData, {
+    async updateById(_id: string, updateData: Partial<UserModel>): Promise<UserModel | null> {
+        return UserSchema.findOneAndUpdate({ _id: _id }, updateData, {
             new: true,
         }).exec();
     }

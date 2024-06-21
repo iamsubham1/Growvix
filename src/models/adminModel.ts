@@ -9,6 +9,7 @@ export interface AdminModel extends mongoose.Document {
     businessList: String[];
     isDeleted: boolean;
     status: string;
+    picture: string
 }
 
 const adminSchema = new mongoose.Schema(
@@ -37,6 +38,7 @@ const adminSchema = new mongoose.Schema(
             type: String,
             enum: ['ACTIVE', 'SUSPENDED']
         },
+        picture: { type: String }
     },
     {
         collection: 'admin',

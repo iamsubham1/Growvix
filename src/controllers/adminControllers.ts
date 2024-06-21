@@ -96,9 +96,9 @@ export class AdminController {
         }
     }
 
-    updateEmployee = async (req: Request & { user: any }, res: Response) => {
+    updateEmployeeStatus = async (req: Request & { user: any }, res: Response) => {
         try {
-            return await this.adminService.updateAccountById(req, res);
+            return await this.adminService.updateAccountStatusById(req, res);
         } catch (error) {
             return responseStatus(res, 500, msg.common.somethingWentWrong, error);
         }
@@ -111,4 +111,14 @@ export class AdminController {
             return responseStatus(res, 500, msg.common.somethingWentWrong, error);
         }
     }
+
+    uploadImg = async (req: Request, res: Response) => {
+        try {
+            const result = await this.adminService.uploadUserProfileImage(req, res);
+            return result;
+        } catch (error) {
+            console.error('Error uploading profile image:', error);
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+        }
+    };
 }

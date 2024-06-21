@@ -9,8 +9,8 @@ export class AdminRepository {
     }
 
 
-    async updateById(_id: string, userData: Partial<AdminModel>): Promise<AdminModel | null> {
-        return AdminSchema.findOneAndUpdate({ _id: _id }, userData, {
+    async updateById(_id: string, updateData: Partial<AdminModel>): Promise<AdminModel | null> {
+        return AdminSchema.findOneAndUpdate({ _id: _id }, updateData, {
             new: true,
         }).exec();
     }
@@ -18,6 +18,7 @@ export class AdminRepository {
     async findByEmail(email: string): Promise<AdminModel | null> {
         return AdminSchema.findOne({ email: email }).exec();
     }
+
     async findById(_id: string): Promise<AdminModel | null> {
         return AdminSchema.findById({ _id: _id }).exec();
     }

@@ -17,6 +17,7 @@ export const checkJWT = (req: Request & { user: any }, res: Response, next: Next
             return responseStatus(res, 400, msg.token.invalid, {});
         }
         req.user = { payload: decode };
+
         return next();
     } catch (error) {
         return responseStatus(res, 400, msg.token.error, {});

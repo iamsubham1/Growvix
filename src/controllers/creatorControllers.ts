@@ -26,4 +26,11 @@ export class CreatorController {
     delete = async (req: Request, res: Response) => {
         await this.creatorService.delete(req, res);
     };
+
+    uploadImg = async (req: Request, res: Response) => {
+
+        await this.creatorService.uploadUserProfileImage(req, res);
+
+
+    };
 }

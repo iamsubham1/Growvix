@@ -8,13 +8,11 @@ import { Inject, Service } from 'typedi';
 import { jwtSignIN } from '../configuration/config';
 import { userObjectCleanUp } from '../helper/utils';
 import * as dotenv from 'dotenv';
-import { Model, Document } from 'mongoose';
 
 dotenv.config();
 import { UserModel, UserSchema } from '../models/userModel';
 import sendEmailWithPassword from '../helper/sendMail';
 import uploadImage from '../helper/uploadImage'; // Import the uploadImage function from your helper
-const UserSchema: Model<UserModel & Document> = require('../models/userModel').model;
 
 @Service()
 export class UserService {
@@ -244,21 +242,24 @@ export class UserService {
             const userId = req.params.id;
 
             if (!userId) {
-                console.log("Invalid userId, sending 400 response...");
                 return responseStatus(res, 400, msg.common.invalidRequest, null);
             }
 
             const secure_url = await uploadImage(req, res);
-            console.log("secureurl:", secure_url);
 
-            // Respond with the secure_url upon successful upload
-            return responseStatus(res, 200, 'Uploaded successfully', secure_url);
+            if (secure_url) {
+                const updateData = { picture: secure_url };
+                const updatedUser = await this.userRepository.updateById(userId, updateData);
+                return responseStatus(res, 200, 'Uploaded successfully', updatedUser);
+            } else {
+                return responseStatus(res, 500, msg.common.somethingWentWrong, 'Failed to upload image');
+            }
+
         } catch (error) {
             if (error.statusCode) {
                 return responseStatus(res, error.statusCode, error.message, null);
             }
             console.error('Error uploading profile image:', error);
-            console.log("Sending 500 response due to error...");
             return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
         }
     };

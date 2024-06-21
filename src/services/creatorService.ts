@@ -9,6 +9,7 @@ import { jwtSignIN } from '../configuration/config';
 import { CreatorModel } from '../models/creatorModel';
 import * as dotenv from 'dotenv';
 import sendEmailWithPassword from '../helper/sendMail';
+import uploadImage from '../helper/uploadImage'; // Import the uploadImage function from your helper
 
 dotenv.config();
 
@@ -125,6 +126,35 @@ export class CreatorService {
             return responseStatus(res, 200, msg.user.userDeletedSuccess, {});
         } catch (error) {
             console.error(error);
+            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+        }
+    };
+
+
+    uploadUserProfileImage = async (req: Request, res: Response) => {
+        try {
+
+            const userId = req.params.id;
+
+            if (!userId) {
+                return responseStatus(res, 400, msg.common.invalidRequest, null);
+            }
+
+            const secure_url = await uploadImage(req, res);
+
+            if (secure_url) {
+                const updateData = { avatar: secure_url };
+                const updatedUser = await this.creatorRepository.updateById(userId, updateData);
+                return responseStatus(res, 200, 'Uploaded successfully', updatedUser);
+            } else {
+                return responseStatus(res, 500, msg.common.somethingWentWrong, 'Failed to upload image');
+            }
+
+        } catch (error) {
+            if (error.statusCode) {
+                return responseStatus(res, error.statusCode, error.message, null);
+            }
+            console.error('Error uploading profile image:', error);
             return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
         }
     };
