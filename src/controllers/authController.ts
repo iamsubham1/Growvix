@@ -10,7 +10,7 @@ export class AuthController {
     constructor(
         @Inject() private userService: UserService,
         private businessService: BusinessService,
-    ) {}
+    ) { }
 
     registerUser = async (req: Request, res: Response) => {
         try {
@@ -43,9 +43,18 @@ export class AuthController {
             return responseStatus(res, 500, msg.common.somethingWentWrong, error);
         }
     };
-    findUser = async (req: Request & { user: any }, res: Response) => {
+
+    findUserByEmail = async (req: Request & { user: any }, res: Response) => {
         try {
-            return await this.userService.findUser(req, res);
+            return await this.userService.findUserByEmail(req, res);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+        }
+    };
+
+    findUserById = async (req: Request & { user: any }, res: Response) => {
+        try {
+            return await this.userService.findUserById(req, res);
         } catch (error) {
             return responseStatus(res, 500, msg.common.somethingWentWrong, error);
         }
@@ -58,4 +67,20 @@ export class AuthController {
             return responseStatus(res, 500, msg.common.somethingWentWrong, error);
         }
     };
+
+    getAllBusiness = async (req: Request, res: Response) => {
+        try {
+            return await this.userService.getAllUsers(req, res);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+        }
+    }
+
+    updateStatus = async (req: Request, res: Response) => {
+        try {
+            return await this.userService.updateBusinessStatus(req, res);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+        }
+    }
 }

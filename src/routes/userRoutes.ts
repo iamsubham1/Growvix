@@ -22,11 +22,11 @@ const planController = Container.get(PlanController);
 const billingTypeController = Container.get(BillingTypeController);
 
 // Routes for User Authentication
-router.route('/registerUser').post(validate('body', RegisterUserValidate), authController.registerUser); 
+router.route('/registerUser').post(validate('body', RegisterUserValidate), authController.registerUser);
 router.route('/loginUser').post(validate('body', EmailorNumberPassValidate), authController.loginUser);
 router.route('/updateUser').patch([checkJWT], authController.updateUser);
 router.route('/deleteUser').delete([checkJWT], authController.deleteUser);
-router.route('/findUser').post(authController.findUser);
+// router.route('/findUser').post(authController.findUserByEmail);
 
 //Business routes
 router.route('/allCategories').get(authController.getAllBusinessCategory);

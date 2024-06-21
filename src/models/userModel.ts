@@ -20,6 +20,7 @@ export interface UserModel extends Document {
     latitude?: number;
     status: string;
     tokens: string;
+    isDeleted: boolean;
 }
 
 const userSchema = new Schema<UserModel>(
@@ -48,7 +49,7 @@ const userSchema = new Schema<UserModel>(
             type: String,
             enum: ['ACTIVE', 'SUSPENDED']
         },
-
+        isDeleted: { type: Boolean }
     },
     { collection: 'users', timestamps: true },
 );

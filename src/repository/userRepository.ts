@@ -40,10 +40,49 @@ export class UserRepository {
         }
     }
 
+    async softDeleteById(_id: string): Promise<UserModel | null> {
+        console.log(_id);
+        try {
+            const softDeletedUser = await UserSchema.findByIdAndUpdate(
+                _id,
+                { isDeleted: true },
+                { new: true }
+            ).exec();
+            console.log(softDeletedUser);
+            return softDeletedUser;
+        } catch (error) {
+            console.error(error);
+            return null;
+        }
+    }
+
+    async findById(userId: string): Promise<UserModel | null> {
+        try {
+            const user = await UserSchema.findById(userId).exec();
+            if (!user) {
+                return null;
+            }
+            return user;
+        } catch (error) {
+            console.error(error);
+            return null;
+        }
+    }
+
     async findByPhoneNumber(phoneNumber: string): Promise<UserModel | null> {
         return UserSchema.findOne({ phoneNumber: phoneNumber })
             .populate('subscription')
             .populate('businessCategory') // Add other fields you want to populate
             .exec();
+    }
+
+    async findAll(query: any): Promise<UserModel[]> {
+        return await UserSchema.find(query).exec();
+    }
+
+    async updateBusinessStatusId(_id: string, status: string): Promise<UserModel | null> {
+        return await UserSchema.findOneAndUpdate({ _id: _id }, { status: status }, {
+            new: true,
+        }).exec();
     }
 }

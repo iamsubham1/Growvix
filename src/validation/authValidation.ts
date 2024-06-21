@@ -19,7 +19,7 @@ export const RegisterUserValidate: Joi.ObjectSchema = Joi.object().keys({
 export const RegisterEmailPassValidate: Joi.ObjectSchema = Joi.object().keys({
     name: Joi.string().min(3),
     email: Joi.string().email({ minDomainSegments: 2 }),
-    password: Joi.string().pattern(new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$')),
+    // password: Joi.string().pattern(new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$')),
     businessName: Joi.string().min(3),
     role: Joi.string().min(3).required(),
 });

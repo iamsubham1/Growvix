@@ -10,10 +10,16 @@ import { userObjectCleanUp } from '../helper/utils';
 import * as dotenv from 'dotenv';
 dotenv.config();
 import { UserModel, UserSchema } from '../models/userModel';
+import sendEmailWithPassword from '../helper/sendMail';
 
 @Service()
 export class UserService {
     constructor(@Inject() private userRepository: UserRepository) { }
+
+    private generatePassword(): string {
+        const randomNumber = Math.floor(Math.random() * 10000);
+        return `GrowVix@sicdigit${randomNumber}`;
+    }
 
     save = async (req: Request, res: Response) => {
         try {
@@ -33,17 +39,25 @@ export class UserService {
                     return responseStatus(res, 400, msg.user.userPhoneNumberExist, null);
                 }
             }
-            console.log(user?.password)
-            user.password = await argon2.hash(user?.password);
-            console.log(user?.password)
+
+            // Generate and hash password
+            const generatedPassword = this.generatePassword();
+            console.log(generatedPassword);
+            user.password = await argon2.hash(generatedPassword);
+            user.isDeleted = false;
+
             const newUser = await this.userRepository.save(user);
             if (!newUser) {
                 return responseStatus(res, 500, msg.user.errorInSaving, null);
             }
+            // Send email with the auto-generated password
+            await sendEmailWithPassword(newUser.email, generatedPassword);
+
             const token = jwt.sign({ userId: newUser._id }, jwtSignIN.secret);
             return responseStatus(res, 200, msg.user.userSavedSuccess, {
                 token: token,
                 user: newUser,
+
             });
         } catch (error) {
             console.error(error);
@@ -80,7 +94,7 @@ export class UserService {
             return responseStatus(res, 200, msg.user.loggedInSuccess, {
                 token: token,
                 user: userObjectCleanUp(user),
-            }); 
+            });
         } catch (error) {
             console.error(error);
             return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
@@ -89,7 +103,6 @@ export class UserService {
 
     updateAccount = async (req: Request & { user: any }, res: Response) => {
         try {
-            console.log()
             const _id = req.user?.payload?.userId;
             if (!_id) {
                 return responseStatus(res, 400, msg.common.invalidRequest, null);
@@ -112,13 +125,14 @@ export class UserService {
         }
     };
 
+    //soft delete
     delete = async (req: Request & { user: any }, res: Response) => {
         try {
-            const _id = req.user?.payload?.userId;
+            const _id = req.params.id
             if (!_id) {
                 return responseStatus(res, 400, msg.common.invalidRequest, null);
             }
-            await this.userRepository.deleteById(_id);
+            await this.userRepository.softDeleteById(_id);
             return responseStatus(res, 200, msg.user.userDeletedSuccess, {});
         } catch (error) {
             console.error(error);
@@ -126,7 +140,7 @@ export class UserService {
         }
     };
 
-    findUser = async (req: Request & { user: any }, res: Response) => {
+    findUserByEmail = async (req: Request & { user: any }, res: Response) => {
         try {
             const email = req.body.email;
             if (!email) {
@@ -137,6 +151,21 @@ export class UserService {
                 return responseStatus(res, 200, msg.user.userEmailExist, true);
             }
             return responseStatus(res, 200, msg.user.userEmailNotExist, false);
+        } catch (error) {
+            console.error(error);
+            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+        }
+    };
+
+    findUserById = async (req: Request & { user: any }, res: Response) => {
+        try {
+            const userId = req.params.id;
+
+            const user = await this.userRepository.findById(userId);
+            if (user.isDeleted == false) {
+                return responseStatus(res, 200, msg.user.userFound, user);
+            }
+            return responseStatus(res, 200, msg.user.userNotExist, false);
         } catch (error) {
             console.error(error);
             return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
@@ -170,4 +199,39 @@ export class UserService {
 
         return { existingUser: true, user, token };
     }
+
+    getAllUsers = async (req: Request, res: Response) => {
+        try {
+            const allUsers = await this.userRepository.findAll({ isDeleted: false });
+            console.log(allUsers);
+            return responseStatus(res, 200, msg.user.fetchedSuccessfully, allUsers);
+        } catch (error) {
+            console.error(error);
+            return responseStatus(res, 500, msg.user.fetchFailed, 'An unknown error occurred');
+        }
+    }
+
+    updateBusinessStatus = async (req: Request, res: Response) => {
+        try {
+            const _id = req.params.id;
+            const { status } = req.body;
+            console.log(status);
+
+            if (!_id || typeof status !== 'string') {
+                return responseStatus(res, 400, msg.common.invalidRequest, null);
+            }
+
+            const updatedUser = await this.userRepository.updateBusinessStatusId(_id, status);
+
+            if (!updatedUser) {
+                return responseStatus(res, 404, msg.user.userNotExist, null);
+            }
+
+            return responseStatus(res, 200, 'status updated successfully', updatedUser);
+        } catch (error) {
+            console.error("Error updating business status:", error);
+            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+        }
+    };
+
 }

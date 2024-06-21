@@ -3,6 +3,7 @@ import { CreatorModel, Creator } from '../models/creatorModel';
 
 @Service()
 export class CreatorRepository {
+
     async save(creator: CreatorModel): Promise<CreatorModel | null> {
         const creatorData = new Creator(creator);
         return new Creator(creatorData).save();
@@ -40,8 +41,7 @@ export class CreatorRepository {
     async findById(_id: string): Promise<CreatorModel | null> {
         return Creator.findById(_id).exec();
     }
-
-    async findAll(): Promise<CreatorModel[]> {
-        return Creator.find().exec();
+    async findAll(query: any): Promise<CreatorModel[]> {
+        return Creator.find(query).exec();
     }
 }

@@ -100,6 +100,8 @@ export const msg = {
         newPasswordError: 'Password must have 8 Char with One Lower and One Upper Character',
         notArtist: 'You are not authorized',
         userDeletedSuccess: 'Delete Successfully',
+        fetchedSuccessfully: 'Data fetched Successfully',
+        fetchFailed: 'Failed to Fetch Data'
     },
     role: {
         accessDenied: 'You are not authorized to access this API.',

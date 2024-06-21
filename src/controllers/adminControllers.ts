@@ -11,7 +11,7 @@ export class AdminController {
     constructor(
         @Inject() private adminService: AdminService,
         private businessService: BusinessService,
-    ) {}
+    ) { }
 
     registerAdmin = async (req: Request, res: Response) => {
         try {
@@ -37,9 +37,10 @@ export class AdminController {
         }
     };
 
+    //soft delete(admin/employee)
     deleteAdmin = async (req: Request & { user: any }, res: Response) => {
         try {
-            return await this.adminService.delete(req, res);
+            return await this.adminService.softDelete(req, res);
         } catch (error) {
             return responseStatus(res, 500, msg.common.somethingWentWrong, error);
         }
@@ -68,4 +69,46 @@ export class AdminController {
             return responseStatus(res, 500, msg.common.somethingWentWrong, error);
         }
     };
+
+    updatePassword = async (req: Request & { user: any }, res: Response) => {
+        try {
+
+            return await this.adminService.updatePassword(req, res);
+
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+        }
+    };
+
+    getAllEmployee = async (req: Request, res: Response) => {
+        try {
+            return await this.adminService.getAllEmployees(req, res);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+        }
+    }
+
+    getEmployeeById = async (req: Request, res: Response) => {
+        try {
+            return await this.adminService.getEmployeeById(req, res);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+        }
+    }
+
+    updateEmployee = async (req: Request & { user: any }, res: Response) => {
+        try {
+            return await this.adminService.updateAccountById(req, res);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+        }
+    };
+
+    assignBusiness = async (req: Request & { user: any }, res: Response) => {
+        try {
+            return await this.adminService.assignBusinessToEmployee(req, res);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+        }
+    }
 }
