@@ -1,8 +1,8 @@
 import * as express from 'express';
-import { AuthController } from '../controllers/authController';
+import { UserController } from '../controllers/userController';
 import { Container } from 'typedi';
 import { validate } from '../middleware/validation.middleware';
-import { RegisterUserValidate, EmailorNumberPassValidate } from '../validation/authValidation';
+import { RegisterUserValidate, EmailorNumberPassValidate, UpdatePassValidate } from '../validation/authValidation';
 import { checkJWT } from '../middleware/auth.middleware';
 import { GoogleAuthController } from '../controllers/googleAuthControllers';
 import { FacebookAuthController } from '../controllers/facebookAuthControllers';
@@ -15,21 +15,29 @@ dotenv.config();
 
 const router = express.Router();
 
-const authController = Container.get(AuthController);
+const userController = Container.get(UserController);
 const googleAuthController = Container.get(GoogleAuthController);
 const facebookAuthController = Container.get(FacebookAuthController);
 const planController = Container.get(PlanController);
 const billingTypeController = Container.get(BillingTypeController);
 
 // Routes for User Authentication
-router.route('/registerUser').post(validate('body', RegisterUserValidate), authController.registerUser);
-router.route('/loginUser').post(validate('body', EmailorNumberPassValidate), authController.loginUser);
-router.route('/updateUser').patch([checkJWT], authController.updateUser);
-router.route('/deleteUser').delete([checkJWT], authController.deleteUser);
+router.route('/registerUser').post(validate('body', RegisterUserValidate), userController.registerUser);
+router.route('/loginUser').post(validate('body', EmailorNumberPassValidate), userController.loginUser);
+router.route('/updateUser').patch([checkJWT], userController.updateUser);
+router.route('/deleteUser').delete([checkJWT], userController.deleteUser);
+
+
+
+
+router.route('/updatePassword').patch(validate('body', UpdatePassValidate), [checkJWT], userController.updatePassword);//new added
+router.route('/uploadpic').post([checkJWT], userController.uploadImg); //new added tested
+
+
 // router.route('/findUser').post(authController.findUserByEmail);
 
 //Business routes
-router.route('/allCategories').get(authController.getAllBusinessCategory);
+router.route('/allCategories').get(userController.getAllBusinessCategory);
 
 //Plan routes
 router.route('/getplans').get(planController.getAllPlans);

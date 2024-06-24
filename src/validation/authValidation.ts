@@ -1,11 +1,13 @@
 import * as Joi from '@hapi/joi';
 import { msg } from '../helper/messages';
 
+
+// for business
 export const RegisterUserValidate: Joi.ObjectSchema = Joi.object().keys({
     name: Joi.string().min(3),
     email: Joi.string().email({ minDomainSegments: 2 }),
     phoneNumber: Joi.number().integer().min(1000000000).max(9999999999),
-    password: Joi.string().pattern(new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$')).message(msg.user.passwordError),
+    // password: Joi.string().pattern(new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$')).message(msg.user.passwordError),
     businessName: Joi.string().min(3),
     businessCategory: Joi.string().min(3),
     instagramLink: Joi.string().uri(),
@@ -16,13 +18,15 @@ export const RegisterUserValidate: Joi.ObjectSchema = Joi.object().keys({
     latitude: Joi.number().min(-90).max(90), // Add latitude validation
 });
 
+
+//for admin
 export const RegisterEmailPassValidate: Joi.ObjectSchema = Joi.object().keys({
     name: Joi.string().min(3),
     email: Joi.string().email({ minDomainSegments: 2 }),
     // password: Joi.string().pattern(new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$')),
-    businessName: Joi.string().min(3),
     role: Joi.string().min(3).required(),
 });
+
 
 export const EmailPassValidate: Joi.ObjectSchema = Joi.object().keys({
     email: Joi.string().email({ minDomainSegments: 2 }),

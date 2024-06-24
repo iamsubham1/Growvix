@@ -5,11 +5,11 @@ import { transporter } from '../configuration/nodeMailer';
 const fromAddress = `GrowVix Support <${process.env.EMAIL}>`;
 
 const mailOptions = (toEmail: string, generatedPassword: string) => {
-    return {
-        from: fromAddress,
-        to: toEmail,
-        subject: "Generated Password",
-        html: `
+  return {
+    from: fromAddress,
+    to: toEmail,
+    subject: "Generated Password",
+    html: `
             <div style="font-family: Helvetica, Arial, sans-serif; min-width: 1000px; overflow: auto; line-height: 2">
               <div style="margin: 50px auto; width: 70%; padding: 20px 0">
                 <div style="border-bottom: 1px solid #eee">
@@ -28,23 +28,23 @@ const mailOptions = (toEmail: string, generatedPassword: string) => {
               </div>
             </div>
         `
-    };
+  };
 };
 
 // Function to send email with auto-generated password
 const sendEmailWithPassword = async (toEmail: string, generatedPassword: string) => {
-    try {
-        // Generate mail options with provided arguments
-        const options = mailOptions(toEmail, generatedPassword);
+  try {
+    // Generate mail options with provided arguments
+    const options = mailOptions(toEmail, generatedPassword);
 
-        // Send email using transporter
-        const info = await transporter.sendMail(options);
+    // Send email using transporter
+    const info = await transporter.sendMail(options);
 
-        console.log('Email sent:', info.messageId);
-    } catch (error) {
-        console.error('Error sending email:', error);
-        throw new Error('Failed to send email');
-    }
+    console.log('Email sent:', info);
+  } catch (error) {
+    console.error('Error sending email:', error);
+    throw new Error('Failed to send email');
+  }
 };
 
 export default sendEmailWithPassword;

@@ -14,7 +14,7 @@ const REDIRECT_URI = process.env.FACEBOOK_CALLBACK_URL;
 
 @Service()
 export class FacebookAuthController {
-    constructor(@Inject() private userService: UserService) {}
+    constructor(@Inject() private userService: UserService) { }
 
     initiateFacebookLogin = (req: Request, res: Response) => {
         const scope = 'email';

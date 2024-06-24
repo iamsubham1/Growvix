@@ -44,7 +44,7 @@ export class UserService {
 
             // Generate and hash password
             const generatedPassword = this.generatePassword();
-            console.log(generatedPassword);
+            console.log("generatedPassword", generatedPassword);
             user.password = await argon2.hash(generatedPassword);
             user.isDeleted = false;
 
@@ -236,10 +236,11 @@ export class UserService {
         }
     };
 
-    uploadUserProfileImage = async (req: Request, res: Response) => {
+    uploadUserProfileImage = async (req: Request & { user: any }, res: Response) => {
         try {
 
-            const userId = req.params.id;
+            const userId = req.params?.id || req.user?.payload?.userId;
+
 
             if (!userId) {
                 return responseStatus(res, 400, msg.common.invalidRequest, null);
@@ -263,4 +264,38 @@ export class UserService {
             return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
         }
     };
+
+    updatePassword = async (req: Request & { user: any }, res: Response) => {
+        try {
+            const _id = req.user?.payload?.userId;
+            const { oldPassword, newPassword } = req.body;
+
+            const user = await this.userRepository.findById(_id);
+
+            if (!user) {
+                return responseStatus(res, 404, msg.user.userNotFound, null);
+            }
+
+            const passwordMatch = await argon2.verify(user.password, oldPassword);
+
+            if (!passwordMatch) {
+                return responseStatus(res, 401, msg.user.oldPasswordError, null);
+            }
+
+            const hashedNewPassword = await argon2.hash(newPassword);
+
+            user.password = hashedNewPassword;
+            const updateData = { password: hashedNewPassword };
+            const updatedUser = await this.userRepository.updateById(_id, updateData);
+
+            if (!updatedUser) {
+                return responseStatus(res, 500, msg.user.userNotFound, null);
+            }
+
+            return responseStatus(res, 200, msg.user.PasswordChangeSuccessfully, null);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+        }
+    };
+
 }

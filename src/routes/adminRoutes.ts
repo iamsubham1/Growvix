@@ -6,7 +6,7 @@ import { RegisterEmailPassValidate, EmailPassValidate, UpdatePassValidate, Regis
 import { checkJWT, AdminRoleCheck } from '../middleware/auth.middleware';
 import { PlanController } from '../controllers/planControllers';
 import { BillingTypeController } from '../controllers/billingTypeControllers';
-import { AuthController } from '../controllers/authController';
+import { UserController } from '../controllers/userController';
 import { CreatorController } from '../controllers/creatorControllers';
 
 
@@ -16,7 +16,7 @@ const router = express.Router();
 const adminController = Container.get(AdminController);
 const planController = Container.get(PlanController);
 const billingTypeController = Container.get(BillingTypeController);
-const authController = Container.get(AuthController);
+const userController = Container.get(UserController);
 const creatorController = Container.get(CreatorController);
 
 
@@ -33,12 +33,12 @@ router.route('/updateCategory/:id').patch([checkJWT, AdminRoleCheck], adminContr
 router.route('/deleteCategory/:id').delete([checkJWT, AdminRoleCheck], adminController.deleteBusinessCategory);
 
 //business routes
-router.route('/getAllBusiness').get([checkJWT, AdminRoleCheck], authController.getAllBusiness);//new added tested
-router.route('/findBusiness/:id').get([checkJWT, AdminRoleCheck], authController.findUserById);//new added tested
-router.route('/deleteBusiness/:id').patch([checkJWT, AdminRoleCheck], authController.deleteUser);//new added tested
-router.route('/updateBusinessStatus/:id').patch([checkJWT, AdminRoleCheck], authController.updateStatus);//new added tested
-router.route('/registerBusiness').post([checkJWT, AdminRoleCheck], validate('body', RegisterUserValidate), authController.registerUser); //new added tested
-router.route('/uploadpic/business/:id').post([checkJWT, AdminRoleCheck], validate('body', RegisterUserValidate), authController.uploadImg); //new added tested
+router.route('/getAllBusiness').get([checkJWT, AdminRoleCheck], userController.getAllBusiness);//new added tested
+router.route('/findBusiness/:id').get([checkJWT, AdminRoleCheck], userController.findUserById);//new added tested
+router.route('/deleteBusiness/:id').patch([checkJWT, AdminRoleCheck], userController.deleteUser);//new added tested
+router.route('/updateBusinessStatus/:id').patch([checkJWT, AdminRoleCheck], userController.updateStatus);//new added tested
+router.route('/registerBusiness').post([checkJWT, AdminRoleCheck], validate('body', RegisterUserValidate), userController.registerUser); //new added tested
+router.route('/uploadpic/business/:id').post([checkJWT, AdminRoleCheck], userController.uploadImg); //new added tested
 
 //employee Routes
 router.route('/getAllEmployee').get([checkJWT, AdminRoleCheck], adminController.getAllEmployee);//new added tested
@@ -46,15 +46,15 @@ router.route('/getEmployee/:id').get([checkJWT, AdminRoleCheck], adminController
 router.route('/updateEmployeeStatus/:id').patch([checkJWT, AdminRoleCheck], adminController.updateEmployeeStatus);//new added tested
 router.route('/deleteEmployee/:id').patch([checkJWT, AdminRoleCheck], adminController.deleteAdmin);//new added tested
 router.route('/assignBusiness/:employeeId').post([checkJWT, AdminRoleCheck], adminController.assignBusiness);//new added tested
-router.route('/uploadpic/:id').post([checkJWT, AdminRoleCheck], validate('body', RegisterUserValidate), adminController.uploadImg); //new added tested
+router.route('/uploadpic/:id').post([checkJWT, AdminRoleCheck], adminController.uploadImg); //new added tested
 
 //creator Routes 
 router.route('/deleteCreator/:id').patch([checkJWT, AdminRoleCheck], creatorController.delete);//new added tested
 router.route('/getCreator/:id').get([checkJWT, AdminRoleCheck], creatorController.getCreatorById);//new added tested
 router.route('/allCreators').get([checkJWT, AdminRoleCheck], creatorController.getAllCreators);//new added tested
-router.route('/addCreator').post([checkJWT, AdminRoleCheck], creatorController.save);//new added tested tested
+router.route('/addCreator').post([checkJWT, AdminRoleCheck], creatorController.save);//new added tested tested (add validation)
 router.route('/updateCreatorStatus/:id').patch([checkJWT, AdminRoleCheck], creatorController.updateCreatorStatus);//new added tested
-router.route('/uploadpic/creator/:id').post([checkJWT, AdminRoleCheck], validate('body', RegisterUserValidate), creatorController.uploadImg); //new added tested
+router.route('/uploadpic/creator/:id').post([checkJWT, AdminRoleCheck], creatorController.uploadImg); //new added tested
 
 //plan routes
 router.route('/addplan').post([checkJWT, AdminRoleCheck], planController.addPlan);

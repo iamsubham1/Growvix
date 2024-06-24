@@ -130,11 +130,10 @@ export class CreatorService {
         }
     };
 
-
-    uploadUserProfileImage = async (req: Request, res: Response) => {
+    uploadUserProfileImage = async (req: Request & { user: any }, res: Response) => {
         try {
 
-            const userId = req.params.id;
+            const userId = req.params?.id || req.user?.payload?.userId;
 
             if (!userId) {
                 return responseStatus(res, 400, msg.common.invalidRequest, null);

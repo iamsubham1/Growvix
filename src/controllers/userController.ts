@@ -6,7 +6,7 @@ import { UserService } from '../services/userService';
 import { BusinessService } from '../services/businessCategoryServices';
 
 @Service()
-export class AuthController {
+export class UserController {
     constructor(
         @Inject() private userService: UserService,
         private businessService: BusinessService,
@@ -46,14 +46,7 @@ export class AuthController {
         }
     };
 
-    findUserByEmail = async (req: Request & { user: any }, res: Response) => {
-        try {
-            return await this.userService.findUserByEmail(req, res);
-        } catch (error) {
-            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
-        }
-    };
-
+    //search business by id for admin
     findUserById = async (req: Request & { user: any }, res: Response) => {
         try {
             return await this.userService.findUserById(req, res);
@@ -90,12 +83,23 @@ export class AuthController {
 
     // Image Upload
 
-    uploadImg = async (req: Request, res: Response) => {
+    uploadImg = async (req: Request & { user: any }, res: Response) => {
         try {
             const result = await this.userService.uploadUserProfileImage(req, res);
             return result;
         } catch (error) {
             console.error('Error uploading profile image:', error);
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+        }
+    };
+
+
+    updatePassword = async (req: Request & { user: any }, res: Response) => {
+        try {
+
+            return await this.userService.updatePassword(req, res);
+
+        } catch (error) {
             return responseStatus(res, 500, msg.common.somethingWentWrong, error);
         }
     };
