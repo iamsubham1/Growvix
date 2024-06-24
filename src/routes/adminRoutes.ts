@@ -2,7 +2,7 @@ import * as express from 'express';
 import { AdminController } from '../controllers/adminControllers';
 import { Container } from 'typedi';
 import { validate } from '../middleware/validation.middleware';
-import { RegisterEmailPassValidate, EmailPassValidate, UpdatePassValidate, RegisterUserValidate } from '../validation/authValidation';
+import { RegisterEmailPassValidate, EmailPassValidate, UpdatePassValidate, RegisterUserValidate, CreatorValidation } from '../validation/authValidation';
 import { checkJWT, AdminRoleCheck } from '../middleware/auth.middleware';
 import { PlanController } from '../controllers/planControllers';
 import { BillingTypeController } from '../controllers/billingTypeControllers';
@@ -52,7 +52,7 @@ router.route('/uploadpic/:id').post([checkJWT, AdminRoleCheck], adminController.
 router.route('/deleteCreator/:id').patch([checkJWT, AdminRoleCheck], creatorController.delete);//new added tested
 router.route('/getCreator/:id').get([checkJWT, AdminRoleCheck], creatorController.getCreatorById);//new added tested
 router.route('/allCreators').get([checkJWT, AdminRoleCheck], creatorController.getAllCreators);//new added tested
-router.route('/addCreator').post([checkJWT, AdminRoleCheck], creatorController.save);//new added tested tested (add validation)
+router.route('/addCreator').post([checkJWT, AdminRoleCheck], validate('body', CreatorValidation), creatorController.save);//new added tested tested (add validation)
 router.route('/updateCreatorStatus/:id').patch([checkJWT, AdminRoleCheck], creatorController.updateCreatorStatus);//new added tested
 router.route('/uploadpic/creator/:id').post([checkJWT, AdminRoleCheck], creatorController.uploadImg); //new added tested
 

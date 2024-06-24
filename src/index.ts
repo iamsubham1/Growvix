@@ -8,7 +8,7 @@ import * as cors from 'cors';
 import { UserRoutes } from './routes/userRoutes';
 import { AdminRoutes } from './routes/adminRoutes';
 import { PaymentRoutes } from './routes/paymentRoutes';
-
+import { CreatorRoutes } from './routes/creatorRoutes';
 dotenv.config();
 
 const app = express();
@@ -24,6 +24,8 @@ const startServer = async () => {
 
     app.use('/api/user', UserRoutes);
     app.use('/api/admin', AdminRoutes);
+    app.use('/api/creator', CreatorRoutes);
+
     app.use('/api/payment', PaymentRoutes);
 
     app.get('/health', (req: Request, res: Response) => {

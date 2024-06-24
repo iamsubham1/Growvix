@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { Service, Inject } from 'typedi';
 import { CreatorService } from '../services/creatorService';
+import { responseStatus } from '../helper/responses';
+import { msg } from '../helper/messages';
 
 @Service()
 export class CreatorController {
@@ -8,29 +10,77 @@ export class CreatorController {
         @Inject() private creatorService: CreatorService) { }
 
     save = async (req: Request, res: Response) => {
-        await this.creatorService.save(req, res);
+        try {
+            await this.creatorService.save(req, res);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+        }
+    };
+
+    login = async (req: Request, res: Response) => {
+        try {
+            await this.creatorService.login(req, res);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+        }
+    };
+
+    updateUser = async (req: Request & { user: any }, res: Response) => {
+        try {
+            return await this.creatorService.updateAccount(req, res);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+        }
     };
 
     getAllCreators = async (req: Request, res: Response) => {
-        await this.creatorService.getAllCreators(req, res);
+        try {
+            await this.creatorService.getAllCreators(req, res);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+        }
     };
 
     getCreatorById = async (req: Request, res: Response) => {
-        await this.creatorService.getCreatorById(req, res);
+        try {
+            await this.creatorService.getCreatorById(req, res);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+        }
     };
 
     updateCreatorStatus = async (req: Request & { user: any }, res: Response) => {
-        await this.creatorService.updateCreatorStatus(req, res);
+        try {
+            await this.creatorService.updateCreatorStatus(req, res);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+        }
     };
 
-    delete = async (req: Request, res: Response) => {
-        await this.creatorService.delete(req, res);
+    delete = async (req: Request & { user: any }, res: Response) => {
+        try {
+            await this.creatorService.delete(req, res);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+        }
     };
 
     uploadImg = async (req: Request & { user: any }, res: Response) => {
+        try {
+            await this.creatorService.uploadUserProfileImage(req, res);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+        }
+    };
 
-        await this.creatorService.uploadUserProfileImage(req, res);
 
+    updatePassword = async (req: Request & { user: any }, res: Response) => {
+        try {
 
+            return await this.creatorService.updatePassword(req, res);
+
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+        }
     };
 }

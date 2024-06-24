@@ -1,33 +1,33 @@
 import { Service } from 'typedi';
-import { CreatorModel, Creator } from '../models/creatorModel';
+import { CreatorModel, CreatorSchema } from '../models/creatorModel';
 
 @Service()
 export class CreatorRepository {
 
     async save(creator: CreatorModel): Promise<CreatorModel | null> {
-        const creatorData = new Creator(creator);
-        return new Creator(creatorData).save();
+        const creatorData = new CreatorSchema(creator);
+        return new CreatorSchema(creatorData).save();
     }
 
     async update(creator: CreatorModel): Promise<CreatorModel | null> {
-        return Creator.findOneAndUpdate({ _id: creator._id }, creator, {
+        return CreatorSchema.findOneAndUpdate({ _id: creator._id }, creator, {
             new: true,
         }).exec();
     }
 
     async updateById(_id: string, creatorData: Partial<CreatorModel>): Promise<CreatorModel | null> {
-        return Creator.findOneAndUpdate({ _id: _id }, creatorData, {
+        return CreatorSchema.findOneAndUpdate({ _id: _id }, creatorData, {
             new: true,
         }).exec();
     }
 
     async findByEmail(email: string): Promise<CreatorModel | null> {
-        return Creator.findOne({ email: email }).exec();
+        return CreatorSchema.findOne({ email: email }).exec();
     }
 
     async deleteById(creatorId: string): Promise<CreatorModel | null> {
         try {
-            const deletedCreator = await Creator.findByIdAndDelete(creatorId).exec();
+            const deletedCreator = await CreatorSchema.findByIdAndDelete(creatorId).exec();
             if (!deletedCreator) {
                 return null;
             }
@@ -39,9 +39,14 @@ export class CreatorRepository {
     }
 
     async findById(_id: string): Promise<CreatorModel | null> {
-        return Creator.findById(_id).exec();
+        return CreatorSchema.findById(_id).exec();
     }
     async findAll(query: any): Promise<CreatorModel[]> {
-        return Creator.find(query).exec();
+        return CreatorSchema.find(query).exec();
+    }
+
+    async findByPhoneNumber(phoneNumber: string): Promise<CreatorModel | null> {
+        return CreatorSchema.findOne({ phoneNumber: phoneNumber })
+            .exec();
     }
 }

@@ -21,20 +21,13 @@ const facebookAuthController = Container.get(FacebookAuthController);
 const planController = Container.get(PlanController);
 const billingTypeController = Container.get(BillingTypeController);
 
-// Routes for User Authentication
+// Routes for User CRUD
 router.route('/registerUser').post(validate('body', RegisterUserValidate), userController.registerUser);
 router.route('/loginUser').post(validate('body', EmailorNumberPassValidate), userController.loginUser);
 router.route('/updateUser').patch([checkJWT], userController.updateUser);
 router.route('/deleteUser').delete([checkJWT], userController.deleteUser);
-
-
-
-
 router.route('/updatePassword').patch(validate('body', UpdatePassValidate), [checkJWT], userController.updatePassword);//new added
 router.route('/uploadpic').post([checkJWT], userController.uploadImg); //new added tested
-
-
-// router.route('/findUser').post(authController.findUserByEmail);
 
 //Business routes
 router.route('/allCategories').get(userController.getAllBusinessCategory);

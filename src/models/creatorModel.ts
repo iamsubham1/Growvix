@@ -14,7 +14,6 @@ export interface CreatorModel extends mongoose.Document {
     avatar: string;
     address: Address;
     status: string;
-    subscription: string;
     creatorType: string;
     longitude?: number;
     latitude?: number;
@@ -73,5 +72,5 @@ const creatorSchema = new mongoose.Schema(
     },
 );
 
-export const Creator = mongoose.model<CreatorModel>('Creator', creatorSchema);
+export const CreatorSchema = mongoose.model<CreatorModel>('Creator', creatorSchema);
 
