@@ -122,4 +122,14 @@ export class UserController {
         }
     };
 
+    getBusinessStats = async (req: Request, res: Response) => {
+        try {
+            return await this.userService.getBusinessStats(req, res);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+
+        }
+    }
 }
+
+

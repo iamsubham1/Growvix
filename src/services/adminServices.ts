@@ -220,7 +220,7 @@ export class AdminService {
     getEmployeeById = async (req: Request, res: Response) => {
         const employeeId = req.params.id;
         try {
-            const employee = await this.adminRepository.findOne({ _id: employeeId, isDeleted: false });
+            const employee = await this.adminRepository.findOne({ _id: employeeId, isDeleted: false })
             if (!employee) {
                 return responseStatus(res, 404, 'Employee not found', employee);
             }
@@ -325,13 +325,25 @@ export class AdminService {
             const employee = await this.adminRepository.findWithPopulate(
                 { _id: _id, isDeleted: false },
                 [
-                    { path: 'businessList', select: 'name businessName businessCategory instagramLink facebookLink youtubeLink picture' }
+                    {
+                        path: 'businessList',
+                        select: 'name businessName subscription createdAt picture',
+                        populate: {
+                            path: 'subscription',
+                            select: 'plan',
+                            populate: {
+                                path: 'plan',
+                                select: 'name price'
+                            }
+                        }
+                    }
                 ]
             );
 
             if (!employee) {
                 return responseStatus(res, 404, msg.user.userNotFound, null);
             }
+
             employee.password = null;
 
             return responseStatus(res, 200, msg.user.fetchedSuccessfully, employee);

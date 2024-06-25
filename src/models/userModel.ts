@@ -13,7 +13,6 @@ export interface UserModel extends Document {
     subscription: mongoose.Types.ObjectId;
     picture: string;
     google_id: string;
-    avatar: string;
     verified_email: string;
     facebookLink?: string;
     longitude?: number;
@@ -38,7 +37,6 @@ const userSchema = new Schema<UserModel>(
         verified_email: { type: String },
         picture: { type: String },
         google_id: { type: String },
-        avatar: { type: String },
         longitude: { type: Number },
         latitude: { type: Number },
         tokens: {

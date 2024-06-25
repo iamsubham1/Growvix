@@ -343,5 +343,48 @@ export class UserService {
         }
     };
 
+    getBusinessStats = async (req: Request, res: Response) => {
+        try {
+            const totalUsers = await this.userRepository.countTotalUsers();
+
+            const now = new Date();
+            let startDate: Date;
+
+            const timeframe = req.query.timeframe;
+
+            switch (timeframe) {
+                case 'weekly':
+                    startDate = new Date(now.setDate(now.getDate() - now.getDay()));
+                    break;
+                case 'monthly':
+                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                    break;
+                case 'yearly':
+                    startDate = new Date(now.getFullYear(), 0, 1);
+                    break;
+                default:
+                    return responseStatus(res, 400, 'Invalid timeframe. Please use "weekly", "monthly", or "yearly".', null);
+            }
+
+            const newUsers = await this.userRepository.countNewUsersByDateRange(startDate, new Date());
+
+            const totalUsersAtStart = totalUsers - newUsers;
+
+            const growthPercentage = totalUsersAtStart > 0 ? (newUsers / totalUsersAtStart) * 100 : 0;
+            const stats = {
+                totalUsers,
+                newUsers,
+                growthPercentage,
+                timeframe,
+            };
+
+            return responseStatus(res, 200, 'User stats fetched successfully', stats);
+        } catch (error) {
+            console.error('Error fetching user statistics:', error);
+            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+        }
+    };
+
+
 
 }

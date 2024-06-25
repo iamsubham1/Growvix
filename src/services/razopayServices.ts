@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 const Razorpay = require('razorpay');
 import * as CryptoJS from 'crypto-js';
 import * as dotenv from 'dotenv';
-import { SubscriptionPlanModel, } from '../models/subcriptionModel';
+import { SubscriptionPlanModel, } from '../models/subscriptionModel';
 import { BillingTypeSchema } from '../models/billingTypeModel';
 import { PlanSchema } from '../models/plansModel';
 import { UserSchema } from '../models/userModel';

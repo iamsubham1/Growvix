@@ -1,6 +1,6 @@
 import { Inject, Service } from 'typedi';
 import { Request, Response } from 'express';
-import { ISubscriptionPlan } from '../models/subcriptionModel';
+import { SubscriptionPlan } from '../models/subscriptionModel';
 import { SubscriptionRepository } from '../repository/subscriptionRepository';
 import { responseStatus } from '../helper/responses';
 import { msg } from '../helper/messages';
@@ -12,7 +12,7 @@ export class SubscriptionService {
 
     createSubscription = async (req: Request, res: Response) => {
         try {
-            const subscriptionData: ISubscriptionPlan = req.body;
+            const subscriptionData: SubscriptionPlan = req.body;
             const newSubscription = await this.subscriptionRepository.save(subscriptionData);
             if (!newSubscription) {
                 return responseStatus(res, 500, msg.subscription.failed, null);
@@ -27,7 +27,7 @@ export class SubscriptionService {
     updateSubscription = async (req: Request, res: Response) => {
         try {
             const subscriptionId = req.params.id;
-            const updatedSubscriptionData: ISubscriptionPlan = req.body;
+            const updatedSubscriptionData: SubscriptionPlan = req.body;
             const updatedSubscription = await this.subscriptionRepository.updateById(subscriptionId, updatedSubscriptionData);
             if (!updatedSubscription) {
                 return responseStatus(res, 404, msg.subscription.notFound, null);

@@ -1,8 +1,18 @@
 import { AdminModel, AdminSchema } from '../models/adminModel';
 import { Service } from 'typedi';
 
+
+interface PopulateOptions {
+    path: string;
+    select?: string;
+    populate?: PopulateOptions;
+}
+
 @Service()
 export class AdminRepository {
+
+
+
     async save(user: AdminModel): Promise<AdminModel | null> {
         const userData = new AdminSchema(user);
         return new AdminSchema(userData).save();
@@ -61,22 +71,22 @@ export class AdminRepository {
         return await AdminSchema.find(query).exec();
     }
 
-    async findWithPopulate(query: any, populate?: { path: string; select?: string }[]): Promise<AdminModel | null> {
-        let queryExec = AdminSchema.findOne(query);
+    async findWithPopulate(query: any, populate?: any[]): Promise<any | null> {
+        try {
+            let queryExec = AdminSchema.findOne(query);
 
-        if (populate && populate.length > 0) {
-            populate.forEach(({ path, select }) => {
-                if (select) {
-                    queryExec = queryExec.populate({
-                        path: path,
-                        select: select
-                    });
-                } else {
-                    queryExec = queryExec.populate(path);
-                }
-            });
+            if (populate && populate.length > 0) {
+                populate.forEach((pop) => {
+                    queryExec = queryExec.populate(pop);
+                });
+            }
+
+            const result = await queryExec.exec();
+            return result;
+        } catch (error) {
+            console.error('Error in findWithPopulate:', error);
+            throw error;
         }
-
-        return queryExec.exec();
     }
+
 }

@@ -6,6 +6,7 @@ import { msg } from '../helper/messages';
 import { Request, Response } from 'express';
 import { BusinessService } from '../services/businessCategoryServices';
 import { SubscriptionService } from '../services/subscriptionService';
+import { UserService } from '../services/userService';
 
 
 @Service()
@@ -13,7 +14,7 @@ export class AdminController {
     constructor(
         @Inject() private adminService: AdminService,
         private businessService: BusinessService,
-        private subscriptionService: SubscriptionService
+        private subscriptionService: SubscriptionService,
     ) { }
 
     registerAdmin = async (req: Request, res: Response) => {
@@ -162,4 +163,6 @@ export class AdminController {
 
         }
     }
+
+
 }

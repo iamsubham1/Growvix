@@ -89,5 +89,17 @@ export class UserRepository {
         }).exec();
     }
 
+    async countTotalUsers(): Promise<number> {
+        return UserSchema.countDocuments({ isDeleted: false }).exec();
+    }
+
+    async countNewUsersByDateRange(startDate: Date, endDate: Date): Promise<number> {
+        return UserSchema.countDocuments({
+            isDeleted: false,
+            createdAt: { $gte: startDate, $lte: endDate }
+        }).exec();
+    }
+
+
 
 }

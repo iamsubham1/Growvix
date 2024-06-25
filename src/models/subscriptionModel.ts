@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-export interface ISubscriptionPlan extends Document {
+export interface SubscriptionPlan extends Document {
     userId: mongoose.Types.ObjectId;
     plan: mongoose.Types.ObjectId;
     billingType: mongoose.Types.ObjectId;
@@ -28,4 +28,4 @@ const SubscriptionPlanSchema: Schema = new Schema({
     signature: { type: String, required: true },
 });
 
-export const SubscriptionPlanModel = mongoose.model<ISubscriptionPlan>('SubscriptionPlan', SubscriptionPlanSchema);
+export const SubscriptionPlanModel = mongoose.model<SubscriptionPlan>('SubscriptionPlan', SubscriptionPlanSchema);

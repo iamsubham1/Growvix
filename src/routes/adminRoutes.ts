@@ -43,6 +43,7 @@ router.route('/updateBusinessStatus').patch([checkJWT, AdminRoleCheck], userCont
 router.route('/registerBusiness').post([checkJWT, AdminRoleCheck], validate('body', RegisterUserValidate), userController.registerUser);
 router.route('/uploadpic/business/:id').post([checkJWT, AdminRoleCheck], userController.uploadImg);
 router.route('/searchBusiness/:keyword').post([checkJWT, AdminRoleCheck], userController.searchBusiness); //new added tested works
+router.route('/businessStats').get([checkJWT, AdminRoleCheck], userController.getBusinessStats); //new added tested works
 
 
 //employee Routes
@@ -50,7 +51,6 @@ router.route('/getAllEmployee').get([checkJWT, AdminRoleCheck], adminController.
 router.route('/getEmployee/:id').get([checkJWT, AdminRoleCheck], adminController.getEmployeeById);
 router.route('/updateEmployeeStatus/:id').patch([checkJWT, AdminRoleCheck], adminController.updateEmployeeStatus);
 router.route('/updateEmployeeStatus').patch([checkJWT, AdminRoleCheck], adminController.updateMultipleEmployeeStatus); //new added tested works
-
 router.route('/deleteEmployee/:id').patch([checkJWT, AdminRoleCheck], adminController.deleteAdmin);
 router.route('/assignBusiness/:employeeId').post([checkJWT, AdminRoleCheck], adminController.assignBusiness);
 router.route('/uploadpic/:id').post([checkJWT, AdminRoleCheck], adminController.uploadImg);

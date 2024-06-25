@@ -1,11 +1,11 @@
 // subscriptionRepository.ts
 import mongoose from 'mongoose';
-import { ISubscriptionPlan, SubscriptionPlanModel } from '../models/subcriptionModel';
+import { SubscriptionPlan, SubscriptionPlanModel } from '../models/subscriptionModel';
 import { Service } from 'typedi';
 
 @Service()
 export class SubscriptionRepository {
-    async save(subscription: ISubscriptionPlan): Promise<ISubscriptionPlan | null> {
+    async save(subscription: SubscriptionPlan): Promise<SubscriptionPlan | null> {
         try {
             const newSubscription = new SubscriptionPlanModel(subscription);
             return await newSubscription.save();
@@ -15,7 +15,7 @@ export class SubscriptionRepository {
         }
     }
 
-    async update(subscription: ISubscriptionPlan): Promise<ISubscriptionPlan | null> {
+    async update(subscription: SubscriptionPlan): Promise<SubscriptionPlan | null> {
         try {
             const updatedSubscription = await SubscriptionPlanModel.findByIdAndUpdate(subscription._id, subscription, { new: true });
             return updatedSubscription;
@@ -25,7 +25,7 @@ export class SubscriptionRepository {
         }
     }
 
-    async updateById(_id: string, subscriptionData: Partial<ISubscriptionPlan>): Promise<ISubscriptionPlan | null> {
+    async updateById(_id: string, subscriptionData: Partial<SubscriptionPlan>): Promise<SubscriptionPlan | null> {
         try {
             const updatedSubscription = await SubscriptionPlanModel.findByIdAndUpdate(_id, subscriptionData, { new: true });
             return updatedSubscription;
@@ -35,7 +35,7 @@ export class SubscriptionRepository {
         }
     }
 
-    async findById(subscriptionId: string): Promise<ISubscriptionPlan | null> {
+    async findById(subscriptionId: string): Promise<SubscriptionPlan | null> {
         try {
             const subscription = await SubscriptionPlanModel.findById(subscriptionId);
             return subscription;
@@ -45,7 +45,7 @@ export class SubscriptionRepository {
         }
     }
 
-    async deleteById(subscriptionId: string): Promise<ISubscriptionPlan | null> {
+    async deleteById(subscriptionId: string): Promise<SubscriptionPlan | null> {
         try {
             const deletedSubscription = await SubscriptionPlanModel.findByIdAndDelete(subscriptionId);
             return deletedSubscription;
@@ -55,7 +55,7 @@ export class SubscriptionRepository {
         }
     }
 
-    async findMany(query: any): Promise<ISubscriptionPlan[]> {
+    async findMany(query: any): Promise<SubscriptionPlan[]> {
         try {
             const subscriptions = await SubscriptionPlanModel.find(query);
             return subscriptions;
@@ -65,7 +65,7 @@ export class SubscriptionRepository {
         }
     }
 
-    async findByUserId(userId: string): Promise<ISubscriptionPlan[] | null> {
+    async findByUserId(userId: string): Promise<SubscriptionPlan[] | null> {
         try {
             const subscriptions = await SubscriptionPlanModel.find({ userId: new mongoose.Types.ObjectId(userId) });
             return subscriptions;
@@ -75,7 +75,7 @@ export class SubscriptionRepository {
         }
     }
 
-    async findAll(): Promise<ISubscriptionPlan[]> {
+    async findAll(): Promise<SubscriptionPlan[]> {
         try {
             const subscriptions = await SubscriptionPlanModel.find();
             return subscriptions;
@@ -85,7 +85,7 @@ export class SubscriptionRepository {
         }
     }
 
-    async getUserSubscriptions(userId: string): Promise<ISubscriptionPlan[] | null> {
+    async getUserSubscriptions(userId: string): Promise<SubscriptionPlan[] | null> {
         try {
             const subscriptions = await SubscriptionPlanModel.find({ userId: new mongoose.Types.ObjectId(userId) });
             return subscriptions;
