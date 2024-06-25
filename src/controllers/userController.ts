@@ -81,6 +81,14 @@ export class UserController {
         }
     };
 
+
+    updateMultipleStatus = async (req: Request, res: Response) => {
+        try {
+            return await this.userService.updateMultipleBusinessStatus(req, res);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+        }
+    };
     // Image Upload
 
     uploadImg = async (req: Request & { user: any }, res: Response) => {
@@ -103,4 +111,15 @@ export class UserController {
             return responseStatus(res, 500, msg.common.somethingWentWrong, error);
         }
     };
+
+    searchBusiness = async (req: Request & { user: any }, res: Response) => {
+        try {
+
+            return await this.userService.searchBusinessByName(req, res);
+
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+        }
+    };
+
 }

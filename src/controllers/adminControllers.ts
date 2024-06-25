@@ -5,12 +5,15 @@ import { responseStatus } from '../helper/responses';
 import { msg } from '../helper/messages';
 import { Request, Response } from 'express';
 import { BusinessService } from '../services/businessCategoryServices';
+import { SubscriptionService } from '../services/subscriptionService';
+
 
 @Service()
 export class AdminController {
     constructor(
         @Inject() private adminService: AdminService,
         private businessService: BusinessService,
+        private subscriptionService: SubscriptionService
     ) { }
 
     registerAdmin = async (req: Request, res: Response) => {
@@ -104,6 +107,16 @@ export class AdminController {
         }
     };
 
+
+    updateMultipleEmployeeStatus = async (req: Request & { user: any }, res: Response) => {
+        try {
+            return await this.adminService.updateMultipleStatus(req, res);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+        }
+    };
+
+
     assignBusiness = async (req: Request & { user: any }, res: Response) => {
         try {
             return await this.adminService.assignBusinessToEmployee(req, res);
@@ -121,4 +134,32 @@ export class AdminController {
             return responseStatus(res, 500, msg.common.somethingWentWrong, error);
         }
     };
+
+    search = async (req: Request & { user: any }, res: Response) => {
+        try {
+
+            return await this.adminService.searchEmployeeByName(req, res);
+
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+        }
+    };
+
+    employeeDetailsWithBusiness = async (req: Request & { user: any }, res: Response) => {
+        try {
+            return await this.adminService.employeeDetailsWithBusiness(req, res);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+
+        }
+    }
+
+    getSubcriptionDetails = async (req: Request, res: Response) => {
+        try {
+            return await this.subscriptionService.getSubscriptionDetails(req, res);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+
+        }
+    }
 }

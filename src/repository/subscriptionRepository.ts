@@ -54,6 +54,7 @@ export class SubscriptionRepository {
             return null;
         }
     }
+
     async findMany(query: any): Promise<ISubscriptionPlan[]> {
         try {
             const subscriptions = await SubscriptionPlanModel.find(query);
@@ -83,6 +84,7 @@ export class SubscriptionRepository {
             return [];
         }
     }
+
     async getUserSubscriptions(userId: string): Promise<ISubscriptionPlan[] | null> {
         try {
             const subscriptions = await SubscriptionPlanModel.find({ userId: new mongoose.Types.ObjectId(userId) });
@@ -92,4 +94,57 @@ export class SubscriptionRepository {
             return null;
         }
     }
+
+
+    async getPlanSubscriptionCounts() {
+        try {
+            const subscriptionCounts = await SubscriptionPlanModel.aggregate([
+                {
+                    $group: {
+                        _id: '$plan',
+                        count: { $sum: 1 }
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'plans', // Collection name of PlanModel
+                        localField: '_id',
+                        foreignField: '_id',
+                        as: 'planDetails'
+                    }
+                },
+                {
+                    $unwind: '$planDetails'
+                },
+                {
+                    $group: {
+                        _id: '$planDetails.name',
+                        total: { $sum: '$count' }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        planName: '$_id',
+                        count: '$total'
+                    }
+                }
+            ]);
+
+
+            // Example output handling
+            console.log('Subscription Counts:', subscriptionCounts);
+
+            // Example output formatting (assuming subscriptionCounts is an array of objects)
+            subscriptionCounts.forEach((subscriptionCount) => {
+                console.log(`${subscriptionCount.planName}: ${subscriptionCount.count}`);
+            });
+
+            return subscriptionCounts;
+        } catch (error) {
+            console.error('Error fetching subscription counts:', error);
+            throw error; // Handle or rethrow as needed
+        }
+    }
+
 }

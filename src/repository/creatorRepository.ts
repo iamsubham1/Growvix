@@ -49,4 +49,15 @@ export class CreatorRepository {
         return CreatorSchema.findOne({ phoneNumber: phoneNumber })
             .exec();
     }
+
+    async countTotalCreators(): Promise<number> {
+        return CreatorSchema.countDocuments({ isDeleted: false }).exec();
+    }
+
+    async countNewCreatorsByDateRange(startDate: Date, endDate: Date): Promise<number> {
+        return CreatorSchema.countDocuments({
+            isDeleted: false,
+            createdAt: { $gte: startDate, $lte: endDate }
+        }).exec();
+    }
 }

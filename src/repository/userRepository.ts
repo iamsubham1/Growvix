@@ -79,6 +79,7 @@ export class UserRepository {
     }
 
     async findAll(query: any): Promise<UserModel[]> {
+
         return await UserSchema.find(query).exec();
     }
 

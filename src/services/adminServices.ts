@@ -119,6 +119,34 @@ export class AdminService {
         }
     };
 
+    updateMultipleStatus = async (req: Request, res: Response) => {
+        try {
+            const ids: string[] = req.body.ids;
+            const { status } = req.body;
+
+            // Validate input
+            if (!Array.isArray(ids) || ids.length === 0 || typeof status !== 'string') {
+                return responseStatus(res, 400, msg.common.invalidRequest, null);
+            }
+
+            const updatedUsers = await Promise.all(
+                ids.map(async (_id) => {
+                    const updatedUser = await this.adminRepository.updateById(_id, { status });
+                    return updatedUser;
+                })
+            );
+
+            if (updatedUsers.some((user) => !user)) {
+                return responseStatus(res, 404, msg.user.userNotExist, null);
+            }
+
+            return responseStatus(res, 200, 'Status updated successfully', updatedUsers);
+        } catch (error) {
+            console.error("Error updating business statuses:", error);
+            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+        }
+    }
+
     delete = async (req: Request & { user: any }, res: Response) => {
         try {
 
@@ -170,8 +198,19 @@ export class AdminService {
 
     getAllEmployees = async (req: Request, res: Response) => {
         try {
-            const employees = await this.adminRepository.find({ role: 'EMPLOYEE', isDeleted: false });
-            return responseStatus(res, 200, msg.user.fetchedSuccessfully, employees);
+            const employees = await this.adminRepository.findAll({ role: 'EMPLOYEE', isDeleted: false });
+
+            const sanitizedEmployees = employees.map(employee => {
+                return {
+                    _id: employee._id,
+                    name: employee.name,
+                    email: employee.email,
+                    role: employee.role,
+                    businessList: employee.businessList,
+                    picture: employee.picture
+                };
+            });
+            return responseStatus(res, 200, msg.user.fetchedSuccessfully, sanitizedEmployees);
         } catch (error) {
             console.error("Error fetching employees:", error);
             return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
@@ -180,14 +219,12 @@ export class AdminService {
 
     getEmployeeById = async (req: Request, res: Response) => {
         const employeeId = req.params.id;
-        console.log(employeeId);
         try {
-            const employee = await this.adminRepository.find({ _id: employeeId, isDeleted: false });
-            console.log(employee);
+            const employee = await this.adminRepository.findOne({ _id: employeeId, isDeleted: false });
             if (!employee) {
                 return responseStatus(res, 404, 'Employee not found', employee);
             }
-
+            employee.password = null;
             return responseStatus(res, 200, 'Employee fetched successfully', employee);
         } catch (error) {
             console.error("Error fetching employee:", error);
@@ -260,6 +297,46 @@ export class AdminService {
                 return responseStatus(res, error.statusCode, error.message, null);
             }
             console.error('Error uploading profile image:', error);
+            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+        }
+    };
+
+    searchEmployeeByName = async (req: Request & { user: any }, res: Response) => {
+        try {
+            const keyword = req.params.keyword;
+            const regex = new RegExp(keyword, 'i');
+            const results = await this.adminRepository.findAll({ name: { $regex: regex }, role: 'EMPLOYEE' });
+
+            if (!results.length) {
+                return responseStatus(res, 404, msg.user.userNotExist, null);
+            }
+
+            return responseStatus(res, 200, msg.user.userFound, results);
+        } catch (error) {
+            console.error(`Error occurred while searching for businesses: ${error.message}`);
+            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+        }
+    };
+
+    employeeDetailsWithBusiness = async (req: Request & { user: any }, res: Response) => {
+        try {
+            const _id = req.user?.payload?.userId;
+
+            const employee = await this.adminRepository.findWithPopulate(
+                { _id: _id, isDeleted: false },
+                [
+                    { path: 'businessList', select: 'name businessName businessCategory instagramLink facebookLink youtubeLink picture' }
+                ]
+            );
+
+            if (!employee) {
+                return responseStatus(res, 404, msg.user.userNotFound, null);
+            }
+            employee.password = null;
+
+            return responseStatus(res, 200, msg.user.fetchedSuccessfully, employee);
+        } catch (error) {
+            console.error("Error fetching business assigned to employee:", error);
             return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
         }
     };

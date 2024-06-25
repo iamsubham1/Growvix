@@ -8,7 +8,7 @@ import { ObjectId } from 'mongodb'; // Import ObjectId from the MongoDB driver
 
 @Service()
 export class SubscriptionService {
-    constructor(@Inject() private subscriptionRepository: SubscriptionRepository) {}
+    constructor(@Inject() private subscriptionRepository: SubscriptionRepository) { }
 
     createSubscription = async (req: Request, res: Response) => {
         try {
@@ -62,4 +62,17 @@ export class SubscriptionService {
             return null;
         }
     };
+
+    getSubscriptionDetails = async (req: Request, res: Response) => {
+        try {
+
+            const stats = await this.subscriptionRepository.getPlanSubscriptionCounts();
+
+            return responseStatus(res, 200, msg.subscription.updateSuccess, stats);
+        } catch (error) {
+            console.error('Error fetching user subscriptions:', error);
+            return null;
+        }
+    };
+
 }

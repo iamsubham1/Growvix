@@ -36,9 +36,6 @@ export class AdminRepository {
         }
     }
 
-    async find(query: any): Promise<AdminModel[]> {
-        return AdminSchema.find(query).exec();
-    }
 
     async findOne(query: any): Promise<AdminModel> {
         return AdminSchema.findOne(query).exec();
@@ -57,5 +54,29 @@ export class AdminRepository {
             console.error("Error adding business to user's list:", error);
             return null;
         }
+    }
+
+    async findAll(query: any): Promise<AdminModel[]> {
+
+        return await AdminSchema.find(query).exec();
+    }
+
+    async findWithPopulate(query: any, populate?: { path: string; select?: string }[]): Promise<AdminModel | null> {
+        let queryExec = AdminSchema.findOne(query);
+
+        if (populate && populate.length > 0) {
+            populate.forEach(({ path, select }) => {
+                if (select) {
+                    queryExec = queryExec.populate({
+                        path: path,
+                        select: select
+                    });
+                } else {
+                    queryExec = queryExec.populate(path);
+                }
+            });
+        }
+
+        return queryExec.exec();
     }
 }

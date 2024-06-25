@@ -13,7 +13,6 @@ const router = express.Router();
 const creatorController = Container.get(CreatorController);
 
 
-
 router.route('/register').post(validate('body', CreatorValidation), creatorController.save);
 router.route('/login').post(validate('body', EmailorNumberPassValidate), creatorController.login);
 router.route('/update').patch([checkJWT], creatorController.updateUser);

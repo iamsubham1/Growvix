@@ -125,6 +125,7 @@ export class CreatorService {
             return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
         }
     };
+
     getAllCreators = async (req: Request, res: Response) => {
         try {
             const allCreators = await this.creatorRepository.findAll({ isDeleted: false });
@@ -140,7 +141,7 @@ export class CreatorService {
             const creatorId = req.params.id;
 
             const creator = await this.creatorRepository.findById(creatorId);
-            if (creator) {
+            if (creator && creator.isDeleted === false) {
                 return responseStatus(res, 200, msg.user.userFound, creator);
             }
             return responseStatus(res, 200, msg.user.userNotFound, false);
@@ -171,6 +172,31 @@ export class CreatorService {
     };
 
 
+    updateMultipleCreatorStatus = async (req: Request & { user: any }, res: Response) => {
+        try {
+            const ids: string[] = req.body.ids;
+            const { status } = req.body;
+
+            if (!Array.isArray(ids) || ids.length === 0 || typeof status !== 'string') {
+                return responseStatus(res, 400, msg.common.invalidRequest, null);
+            }
+            const updatedCreatorss = await Promise.all(
+                ids.map(async (_id) => {
+                    const updatedUser = await this.creatorRepository.updateById(_id, { status });
+                    return updatedUser;
+                })
+            );
+
+            if (updatedCreatorss.some((creator) => !creator)) {
+                return responseStatus(res, 404, msg.user.userNotExist, null);
+            }
+
+            return responseStatus(res, 200, 'Status updated successfully', updatedCreatorss);
+        } catch (error) {
+            console.error(error);
+            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+        }
+    };
 
     // Soft delete by updating the isDeleted flag
     delete = async (req: Request & { user: any }, res: Response) => {
@@ -254,4 +280,63 @@ export class CreatorService {
         }
     };
 
+    searchByName = async (req: Request & { user: any }, res: Response) => {
+        try {
+            const keyword = req.params.keyword;
+            const regex = new RegExp(keyword, 'i');
+            const results = await this.creatorRepository.findAll({ name: { $regex: regex }, isDeleted: false });
+
+            if (!results.length) {
+                return responseStatus(res, 404, msg.user.userNotExist, null);
+            }
+
+            return responseStatus(res, 200, msg.user.userFound, results);
+        } catch (error) {
+            console.error(`Error occurred while searching for businesses: ${error.message}`);
+            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+        }
+    };
+
+    getCreatorStats = async (req: Request, res: Response) => {
+        try {
+            const totalCreators = await this.creatorRepository.countTotalCreators();
+
+            const now = new Date();
+            let startDate: Date;
+
+            const timeframe = req.query.timeframe;
+
+            switch (timeframe) {
+                case 'weekly':
+                    startDate = new Date(now.setDate(now.getDate() - now.getDay()));
+                    break;
+                case 'monthly':
+                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                    break;
+                case 'yearly':
+                    startDate = new Date(now.getFullYear(), 0, 1);
+                    break;
+                default:
+                    return responseStatus(res, 400, 'Invalid timeframe. Please use "weekly", "monthly", or "yearly".', null);
+            }
+
+            const newCreators = await this.creatorRepository.countNewCreatorsByDateRange(startDate, new Date());
+
+
+            const totalCreatorsAtStart = totalCreators - newCreators;
+
+            const growthPercentage = totalCreatorsAtStart > 0 ? (newCreators / totalCreatorsAtStart) * 100 : 0;
+            const stats = {
+                totalCreators,
+                newCreators,
+                growthPercentage,
+                timeframe,
+            };
+
+            return responseStatus(res, 200, 'Creator stats fetched successfully', stats);
+        } catch (error) {
+            console.error('Error fetching creator statistics:', error);
+            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+        }
+    }
 }

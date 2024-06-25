@@ -236,6 +236,34 @@ export class UserService {
         }
     };
 
+    updateMultipleBusinessStatus = async (req: Request, res: Response) => {
+        try {
+            const ids: string[] = req.body.ids;
+            const { status } = req.body;
+
+            // Validate input
+            if (!Array.isArray(ids) || ids.length === 0 || typeof status !== 'string') {
+                return responseStatus(res, 400, msg.common.invalidRequest, null);
+            }
+
+            const updatedUsers = await Promise.all(
+                ids.map(async (_id) => {
+                    const updatedUser = await this.userRepository.updateBusinessStatusId(_id, status);
+                    return updatedUser;
+                })
+            );
+
+            if (updatedUsers.some((user) => !user)) {
+                return responseStatus(res, 404, msg.user.userNotExist, null);
+            }
+
+            return responseStatus(res, 200, 'Status updated successfully', updatedUsers);
+        } catch (error) {
+            console.error("Error updating business statuses:", error);
+            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+        }
+    }
+
     uploadUserProfileImage = async (req: Request & { user: any }, res: Response) => {
         try {
 
@@ -297,5 +325,23 @@ export class UserService {
             return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
         }
     };
+
+    searchBusinessByName = async (req: Request & { user: any }, res: Response) => {
+        try {
+            const keyword = req.params.keyword;
+            const regex = new RegExp(keyword, 'i');
+            const results = await this.userRepository.findAll({ businessName: { $regex: regex } });
+
+            if (!results.length) {
+                return responseStatus(res, 404, msg.user.userNotExist, null);
+            }
+
+            return responseStatus(res, 200, msg.user.userFound, results);
+        } catch (error) {
+            console.error(`Error occurred while searching for businesses: ${error.message}`);
+            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+        }
+    };
+
 
 }

@@ -57,6 +57,15 @@ export class CreatorController {
         }
     };
 
+
+    updateMultipleCreatorStatus = async (req: Request & { user: any }, res: Response) => {
+        try {
+            await this.creatorService.updateMultipleCreatorStatus(req, res);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+        }
+    };
+
     delete = async (req: Request & { user: any }, res: Response) => {
         try {
             await this.creatorService.delete(req, res);
@@ -83,4 +92,22 @@ export class CreatorController {
             return responseStatus(res, 500, msg.common.somethingWentWrong, error);
         }
     };
+
+    searchByName = async (req: Request & { user: any }, res: Response) => {
+        try {
+
+            return await this.creatorService.searchByName(req, res);
+
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+        }
+    };
+
+    getCreatorStats = async (req: Request & { user: any }, res: Response) => {
+        try {
+            return await this.creatorService.getCreatorStats(req, res);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+        }
+    }
 }

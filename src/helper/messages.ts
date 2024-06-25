@@ -325,4 +325,17 @@ export const msg = {
         fetchedSuccess: 'Billing types fetched successfully',
         fetchFailed: 'Failed to fetch billing types',
     },
+    post: {
+        success: 'Post added successfully',
+        failed: 'Failed to add post',
+        notFound: 'Post not found',
+        deleteError: 'Failed to delete post',
+        deleteSuccess: 'Post deleted successfully',
+        updateSuccess: 'Post updated successfully',
+        updateFailed: 'Failed to update the post',
+        fetchedSuccess: 'Posts fetched successfully',
+        fetchFailed: 'Sorry, failed to fetch posts',
+    }
+
+
 };

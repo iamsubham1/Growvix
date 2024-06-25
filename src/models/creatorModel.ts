@@ -18,6 +18,9 @@ export interface CreatorModel extends mongoose.Document {
     longitude?: number;
     latitude?: number;
     isDeleted: boolean;
+    instagramLink: string;
+    youtubeLink: string;
+    facebookLink?: string;
 
 }
 
@@ -64,7 +67,10 @@ const creatorSchema = new mongoose.Schema(
         },
         longitude: { type: Number },
         latitude: { type: Number },
-        isDeleted: { type: Boolean }
+        isDeleted: { type: Boolean },
+        instagramLink: { type: String },
+        facebookLink: { type: String },
+        youtubeLink: { type: String },
     },
     {
         collection: 'creators',
