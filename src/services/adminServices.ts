@@ -11,8 +11,7 @@ import { AdminRepository } from '../repository/adminRepository';
 import { AdminModel } from '../models/adminModel';
 import { userObjectCleanUp } from '../helper/utils';
 import sendEmailWithPassword from '../helper/sendMail';
-import uploadImage from '../helper/uploadImage'; // Import the uploadImage function from your helper
-
+import uploadImage from '../helper/uploadImage';
 @Service()
 export class AdminService {
     constructor(@Inject() private adminRepository: AdminRepository) { }

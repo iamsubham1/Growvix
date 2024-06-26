@@ -8,12 +8,12 @@ import { Inject, Service } from 'typedi';
 import { jwtSignIN } from '../configuration/config';
 import { userObjectCleanUp } from '../helper/utils';
 import * as dotenv from 'dotenv';
-dotenv.config();
 import { UserModel, UserSchema } from '../models/userModel';
 import sendEmailWithPassword from '../helper/sendMail';
-import uploadImage from '../helper/uploadImage'; // Import the uploadImage function from your helper
+import uploadImage from '../helper/uploadImage';
 import { TaskRepository } from '../repository/taskRepository';
 import { TaskSchema, TaskModel } from '../models/taskModel';
+dotenv.config();
 
 @Service()
 export class UserService {

@@ -9,7 +9,7 @@ import { jwtSignIN } from '../configuration/config';
 import { CreatorModel } from '../models/creatorModel';
 import * as dotenv from 'dotenv';
 import sendEmailWithPassword from '../helper/sendMail';
-import uploadImage from '../helper/uploadImage'; // Import the uploadImage function from your helper
+import uploadImage from '../helper/uploadImage';
 import { userObjectCleanUp } from '../helper/utils';
 
 dotenv.config();
