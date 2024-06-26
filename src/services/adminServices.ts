@@ -353,4 +353,6 @@ export class AdminService {
             return responseStatus(res, 500, msg.user.fetchFailed, 'An unknown error occurred');
         }
     };
+
+
 }

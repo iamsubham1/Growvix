@@ -426,4 +426,78 @@ export class UserService {
         }
 
     };
+
+
+    getTaskStatistics = async (req: Request & { user: any }, res: Response) => {
+        const _id = req.user?.payload?.userId;
+        try {
+            const now = new Date();
+            let startDate: Date;
+
+            const timeframe = req.query.timeframe as string;
+
+            switch (timeframe) {
+                case 'weekly':
+                    startDate = new Date(now.setDate(now.getDate() - now.getDay()));
+                    break;
+                case 'monthly':
+                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                    break;
+                case 'yearly':
+                    startDate = new Date(now.getFullYear(), 0, 1);
+                    break;
+                default:
+                    return res.status(400).json({
+                        statusMessage: 'Error',
+                        status: 400,
+                        success: false,
+                        message: 'Invalid timeframe. Please use "weekly", "monthly", or "yearly".',
+                    });
+            }
+
+
+            const tasks = await TaskSchema.find({
+                startDate: { $gte: startDate },
+                businessId: _id,
+                status: { $in: ['ONGOING', 'COMPLETED'] },
+            });
+
+            // Calculate statistics
+            let ongoingCount = 0;
+            let completedCount = 0;
+
+            tasks.forEach(task => {
+                if (task.status === 'ONGOING') {
+                    ongoingCount++;
+                } else if (task.status === 'COMPLETED') {
+                    completedCount++;
+                }
+            });
+
+
+            const response = {
+                timeframe,
+                statistics: {
+                    ongoing: ongoingCount,
+                    completed: completedCount,
+                },
+            };
+
+            return res.status(200).json({
+                statusMessage: 'Success',
+                status: 200,
+                success: true,
+                message: 'Task statistics fetched successfully',
+                data: response,
+            });
+        } catch (error) {
+            console.error('Error fetching task statistics:', error);
+            return res.status(500).json({
+                statusMessage: 'Error',
+                status: 500,
+                success: false,
+                message: 'An unknown error occurred',
+            });
+        }
+    };
 }

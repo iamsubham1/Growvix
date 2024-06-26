@@ -148,6 +148,18 @@ export class UserController {
 
         }
     };
+
+
+    taskStats = async (req: Request & { user: any }, res: Response) => {
+        try {
+            return await this.userService.getTaskStatistics(req, res);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+
+        }
+    }
 }
+
+
 
 
