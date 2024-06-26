@@ -6,9 +6,10 @@ export interface PlanModel extends mongoose.Document {
     price: number;
     features: string[];
     billingType: mongoose.Types.ObjectId;
+    description: string;
 }
 
-const planSchema = new mongoose.Schema(
+const planSchema = new mongoose.Schema<PlanModel>(
     {
         name: {
             type: String,
@@ -28,7 +29,7 @@ const planSchema = new mongoose.Schema(
         },
 
         billingType: {
-            type: mongoose.Types.ObjectId,
+            type: mongoose.Schema.Types.ObjectId,
             required: true,
             ref: 'BillingType',
         },

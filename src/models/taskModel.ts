@@ -1,11 +1,12 @@
 import * as mongoose from 'mongoose';
 
-export interface TaskModel extends mongoose.Document {
+export interface TaskModel extends Document {
     _id: mongoose.Types.ObjectId;
     title: string;
     startDate: Date;
     endDate: Date;
     status: 'ONGOING' | 'COMPLETED';
+    businessId: mongoose.Types.ObjectId;
     posts: {
         title: string;
         description: string;
@@ -28,7 +29,7 @@ const postSchema = new mongoose.Schema({
     }
 });
 
-const taskSchema = new mongoose.Schema(
+const taskSchema = new mongoose.Schema<TaskModel>(
     {
         title: {
             type: String,
@@ -47,6 +48,9 @@ const taskSchema = new mongoose.Schema(
             type: [postSchema],
             required: true,
         },
+
+        businessId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+
     },
     {
         collection: 'tasks',

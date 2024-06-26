@@ -1,13 +1,16 @@
 import * as mongoose from 'mongoose'
 
 export interface NotificationModel extends mongoose.Document {
+    userId: mongoose.Schema.Types.ObjectId;
+    list: object[];
+    address: string;
 
 }
 
-export const notificationSchema = new mongoose.Schema({
+export const notificationSchema = new mongoose.Schema<NotificationModel>({
 
     userId: {
-        type: mongoose.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'Admin'
     },
     list: {

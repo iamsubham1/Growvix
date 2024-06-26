@@ -12,7 +12,7 @@ export class PlanService {
     constructor(
         @Inject() private planRepository: PlanRepository,
         private subscriptionRepository: SubscriptionRepository,
-    ) {}
+    ) { }
 
     addPlan = async (req: Request, res: Response) => {
         try {
@@ -60,7 +60,6 @@ export class PlanService {
     getAllPlans = async (req: Request & { user: any }, res: Response) => {
         try {
             const plans = await this.planRepository.findAll();
-            // const userId = req.user?.userId;
             const userId = req.params?.userId;
 
             if (userId) {
@@ -71,7 +70,7 @@ export class PlanService {
                     const purchaseStatus = userPurchasedPlans.includes(plan._id.toString());
                     return { ...plan.toObject(), purchased: purchaseStatus };
                 });
-
+                console.log("this");
                 return responseStatus(res, 200, msg.plan.fetchedSuccess, plansWithPurchaseStatus);
             } else {
                 return responseStatus(res, 200, msg.plan.fetchedSuccess, plans);
@@ -81,9 +80,10 @@ export class PlanService {
             return responseStatus(res, 500, msg.plan.fetchFailed, 'An unknown error occurred');
         }
     };
+
     getPlansByBillingType = async (req: Request & { user: any }, res: Response) => {
         try {
-            // console.log(req.user)
+
             const billingTypeId = req.params.id;
             if (!billingTypeId) {
                 return responseStatus(res, 400, msg.common.recordNotFound, 'Billing Type ID is required');

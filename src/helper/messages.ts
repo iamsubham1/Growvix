@@ -335,6 +335,20 @@ export const msg = {
         updateFailed: 'Failed to update the post',
         fetchedSuccess: 'Posts fetched successfully',
         fetchFailed: 'Sorry, failed to fetch posts',
+    },
+    task: {
+        createdSuccess: 'Task created successfully',
+        fetchedSuccess: 'Task fetched successfully',
+        notFound: 'Task not found',
+        noTasks: 'No Tasks created yet',
+        updatedSuccess: 'Task updated successfully',
+        deletedSuccess: 'Task deleted successfully',
+        validationError: 'Validation error in task data',
+        saveError: 'Error saving task data',
+        updateError: 'Error updating task data',
+        deleteError: 'Error deleting task data',
+        alreadyExists: 'A task with the provided identifier already exists',
+        // Add more task messages as needed
     }
 
 

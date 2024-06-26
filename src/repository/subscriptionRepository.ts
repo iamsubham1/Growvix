@@ -132,10 +132,8 @@ export class SubscriptionRepository {
             ]);
 
 
-            // Example output handling
             console.log('Subscription Counts:', subscriptionCounts);
 
-            // Example output formatting (assuming subscriptionCounts is an array of objects)
             subscriptionCounts.forEach((subscriptionCount) => {
                 console.log(`${subscriptionCount.planName}: ${subscriptionCount.count}`);
             });

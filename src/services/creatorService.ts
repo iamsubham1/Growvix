@@ -128,7 +128,13 @@ export class CreatorService {
 
     getAllCreators = async (req: Request, res: Response) => {
         try {
-            const allCreators = await this.creatorRepository.findAll({ isDeleted: false });
+            const { page = 1, limit = 10 } = req.query;
+            const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
+
+            const allCreators = await this.creatorRepository.findAll({ isDeleted: false }, skip, parseInt(limit as string));
+            if (!allCreators.length) {
+                return responseStatus(res, 200, msg.user.fetchedSuccessfully, "No Creators Exist");
+            }
             return responseStatus(res, 200, msg.user.fetchedSuccessfully, allCreators);
         } catch (error) {
             console.error(error);

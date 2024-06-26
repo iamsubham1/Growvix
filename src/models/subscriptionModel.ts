@@ -14,7 +14,7 @@ export interface SubscriptionPlan extends Document {
     signature: string;
 }
 
-const SubscriptionPlanSchema: Schema = new Schema({
+const SubscriptionPlanSchema: Schema = new Schema<SubscriptionPlan>({
     userId: { type: Schema.Types.ObjectId, ref: 'User' },
     plan: { type: Schema.Types.ObjectId, required: true, ref: 'Plan' },
     billingType: { type: Schema.Types.ObjectId, required: true, ref: 'BillingType' },

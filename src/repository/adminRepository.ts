@@ -46,32 +46,34 @@ export class AdminRepository {
         }
     }
 
-
-    async findOne(query: any): Promise<AdminModel> {
+    async findOne<Query>(query: Query): Promise<AdminModel> {
         return AdminSchema.findOne(query).exec();
     }
 
-    async addBusinessToList(_id: string, businessId: string): Promise<AdminModel | null> {
+    async addBusinessesToList(_id: string, businessIds: string[]): Promise<AdminModel | null> {
         try {
             const updatedUser = await AdminSchema.findOneAndUpdate(
                 { _id: _id },
-                { $push: { businessList: businessId } },
+                { $addToSet: { businessList: { $each: businessIds } } },
                 { new: true }
             ).exec();
 
             return updatedUser;
         } catch (error) {
-            console.error("Error adding business to user's list:", error);
+            console.error("Error adding businesses to user's list:", error);
             return null;
         }
     }
 
-    async findAll(query: any): Promise<AdminModel[]> {
+    async findAll<Query>(query: Query, skip?: number, limit?: number): Promise<AdminModel[]> {
 
-        return await AdminSchema.find(query).exec();
+        return await AdminSchema.find(query)
+            .skip(skip)
+            .limit(limit)
+            .exec();
     }
 
-    async findWithPopulate(query: any, populate?: any[]): Promise<any | null> {
+    async findWithPopulate<Query>(query: Query, populate?: PopulateOptions[]): Promise<any | null> {
         try {
             let queryExec = AdminSchema.findOne(query);
 

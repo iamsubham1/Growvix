@@ -1,12 +1,11 @@
 import * as mongoose from 'mongoose';
 
 export interface BillingTypeModel extends mongoose.Document {
-    _id: mongoose.Types.ObjectId;
     name: string;
     duration: number; // duration in days
 }
 
-const billingTypeSchema = new mongoose.Schema(
+const billingTypeSchema = new mongoose.Schema<BillingTypeModel>(
     {
         name: {
             type: String,

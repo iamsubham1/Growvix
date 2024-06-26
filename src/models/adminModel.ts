@@ -12,7 +12,7 @@ export interface AdminModel extends mongoose.Document {
     picture: string
 }
 
-const adminSchema = new mongoose.Schema(
+const adminSchema = new mongoose.Schema<AdminModel>(
     {
         name: {
             type: String,

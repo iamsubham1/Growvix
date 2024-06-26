@@ -23,7 +23,7 @@ export class UserRepository {
     }
 
     async findByEmail(email: string): Promise<UserModel | null> {
-        return UserSchema.findOne({ email: email })
+        return UserSchema.findOne({ email: email, isDeleted: false })
             .populate('subscription')
             .populate('businessCategory') // Add other fields you want to populate
             .exec();
@@ -61,6 +61,7 @@ export class UserRepository {
     async findById(userId: string): Promise<UserModel | null> {
         try {
             const user = await UserSchema.findById(userId).exec();
+
             if (!user) {
                 return null;
             }
@@ -72,7 +73,7 @@ export class UserRepository {
     }
 
     async findByPhoneNumber(phoneNumber: string): Promise<UserModel | null> {
-        return UserSchema.findOne({ phoneNumber: phoneNumber })
+        return UserSchema.findOne({ phoneNumber: phoneNumber, isDeleted: false })
             .populate('subscription')
             .populate('businessCategory') // Add other fields you want to populate
             .exec();

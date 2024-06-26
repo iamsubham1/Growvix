@@ -2,13 +2,17 @@ import * as mongoose from 'mongoose';
 
 export interface ResetPasswordModel extends mongoose.Document {
     userId: mongoose.Types.ObjectId;
+    otp: number;
+    expireAt: Date;
+    attempt: number;
+
 }
 
-const resetPasswordSchema = new mongoose.Schema(
+const resetPasswordSchema = new mongoose.Schema<ResetPasswordModel>(
     {
         userId: {
-            type: mongoose.Types.ObjectId,
-            ref: 'Admin',
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Admin', // Reference the 'Admin' model
         },
         otp: { type: Number },
         expireAt: { type: Date },

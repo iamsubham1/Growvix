@@ -1,18 +1,15 @@
-import mongoose from 'mongoose';
+import * as mongoose from 'mongoose';
 
 export interface BusinessCategoryModel extends mongoose.Document {
     name: string;
 }
 
-const subscriptionPlanSchema = new mongoose.Schema(
+const businessCategorySchema = new mongoose.Schema<BusinessCategoryModel>(
     {
         name: {
             type: String,
         },
-        created_at: {
-            type: Date,
-            default: Date.now,
-        },
+
     },
     {
         collection: 'Business-Category',
@@ -20,4 +17,4 @@ const subscriptionPlanSchema = new mongoose.Schema(
     },
 );
 
-export const BusinessCategorySchema = mongoose.model<BusinessCategoryModel>('BusinessCategory', subscriptionPlanSchema);
+export const BusinessCategorySchema = mongoose.model<BusinessCategoryModel>('BusinessCategory', businessCategorySchema);

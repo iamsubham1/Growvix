@@ -55,6 +55,8 @@ router.route('/deleteEmployee/:id').patch([checkJWT, AdminRoleCheck], adminContr
 router.route('/assignBusiness/:employeeId').post([checkJWT, AdminRoleCheck], adminController.assignBusiness);
 router.route('/uploadpic/:id').post([checkJWT, AdminRoleCheck], adminController.uploadImg);
 router.route('/search/:keyword').post([checkJWT, AdminRoleCheck], adminController.search); //new added tested works
+
+
 router.route('/employeeDetails').get([checkJWT], adminController.employeeDetailsWithBusiness);//new added tested works
 
 

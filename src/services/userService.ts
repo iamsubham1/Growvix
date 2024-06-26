@@ -8,15 +8,19 @@ import { Inject, Service } from 'typedi';
 import { jwtSignIN } from '../configuration/config';
 import { userObjectCleanUp } from '../helper/utils';
 import * as dotenv from 'dotenv';
-
 dotenv.config();
 import { UserModel, UserSchema } from '../models/userModel';
 import sendEmailWithPassword from '../helper/sendMail';
 import uploadImage from '../helper/uploadImage'; // Import the uploadImage function from your helper
+import { TaskRepository } from '../repository/taskRepository';
+import { TaskSchema, TaskModel } from '../models/taskModel';
 
 @Service()
 export class UserService {
-    constructor(@Inject() private userRepository: UserRepository) { }
+    constructor(@Inject()
+    private userRepository: UserRepository,
+        private taskRepository: TaskRepository
+    ) { }
 
     private generatePassword(): string {
         const randomNumber = Math.floor(Math.random() * 10000);
@@ -31,12 +35,14 @@ export class UserService {
             }
             if (user.email) {
                 const existingUserByEmail = await this.userRepository.findByEmail(user.email);
+                console.log(existingUserByEmail);
                 if (existingUserByEmail) {
                     return responseStatus(res, 400, msg.user.userEmailExist, null);
                 }
             }
             if (user.phoneNumber) {
                 const existingUserByPhoneNumber = await this.userRepository.findByPhoneNumber(user.phoneNumber.toString());
+
                 if (existingUserByPhoneNumber) {
                     return responseStatus(res, 400, msg.user.userPhoneNumberExist, null);
                 }
@@ -149,7 +155,7 @@ export class UserService {
                 return responseStatus(res, 400, msg.common.emptyBody, null);
             }
             const user = await this.userRepository.findByEmail(email);
-            if (user) {
+            if (user && user.isDeleted == false) {
                 return responseStatus(res, 200, msg.user.userEmailExist, true);
             }
             return responseStatus(res, 200, msg.user.userEmailNotExist, false);
@@ -205,7 +211,10 @@ export class UserService {
     getAllUsers = async (req: Request, res: Response) => {
         try {
             const allUsers = await this.userRepository.findAll({ isDeleted: false });
-            console.log(allUsers);
+
+            if (!allUsers.length) {
+                return responseStatus(res, 200, msg.user.fetchedSuccessfully, "No Users Exist");
+            }
             return responseStatus(res, 200, msg.user.fetchedSuccessfully, allUsers);
         } catch (error) {
             console.error(error);
@@ -385,6 +394,36 @@ export class UserService {
         }
     };
 
+    // task services 
+    createTask = async (req: Request & { user: any }, res: Response) => {
+        try {
+            const _id = req.user?.payload?.userId;
+            const taskData: TaskModel = req.body;
+            const newTask = await this.taskRepository.save({ ...taskData, businessId: _id });
+            if (!newTask) {
+                return responseStatus(res, 500, msg.task.saveError, null);
+            }
+            return responseStatus(res, 200, msg.task.createdSuccess, newTask);
+        } catch (error) {
+            console.error(error);
+            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+        }
+    };
+
+    getAllTasks = async (req: Request & { user: any }, res: Response) => {
+        try {
+            const _id = req.user?.payload?.userId;
+            const tasks = await this.taskRepository.findAll({ businessId: _id });
+            if (!tasks.length) {
+                return responseStatus(res, 200, msg.task.fetchedSuccess, 'No tasks to show ');
+            }
+            return responseStatus(res, 200, msg.task.fetchedSuccess, tasks);
 
 
+        } catch (error) {
+            console.error('Error fetching user statistics:', error);
+            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+        }
+
+    };
 }

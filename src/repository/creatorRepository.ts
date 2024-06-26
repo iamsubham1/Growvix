@@ -41,8 +41,13 @@ export class CreatorRepository {
     async findById(_id: string): Promise<CreatorModel | null> {
         return CreatorSchema.findById(_id).exec();
     }
-    async findAll(query: any): Promise<CreatorModel[]> {
-        return CreatorSchema.find(query).exec();
+
+
+    async findAll(query: any, skip?: number, limit?: number): Promise<CreatorModel[]> {
+        return CreatorSchema.find(query)
+            .skip(skip)
+            .limit(limit)
+            .exec();
     }
 
     async findByPhoneNumber(phoneNumber: string): Promise<CreatorModel | null> {

@@ -129,7 +129,25 @@ export class UserController {
             return responseStatus(res, 500, msg.common.somethingWentWrong, error);
 
         }
-    }
+    };
+
+    createTask = async (req: Request & { user: any }, res: Response) => {
+        try {
+            return await this.userService.createTask(req, res);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+
+        }
+    };
+
+    getAllTasks = async (req: Request & { user: any }, res: Response) => {
+        try {
+            return await this.userService.getAllTasks(req, res);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+
+        }
+    };
 }
 
 

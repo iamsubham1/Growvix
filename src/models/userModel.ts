@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema, Model } from 'mongoose';
+import * as mongoose from 'mongoose';
 
 export interface UserModel extends Document {
     _id: mongoose.Types.ObjectId;
@@ -22,18 +22,18 @@ export interface UserModel extends Document {
     isDeleted: boolean;
 }
 
-const userSchema = new Schema<UserModel>(
+const userSchema = new mongoose.Schema<UserModel>(
     {
         name: { type: String },
         phoneNumber: { type: String, unique: true },
         email: { type: String, unique: true },
         password: { type: String },
         businessName: { type: String },
-        businessCategory: { type: Schema.Types.ObjectId, ref: 'BusinessCategory' },
+        businessCategory: { type: mongoose.Schema.Types.ObjectId, ref: 'BusinessCategory' },
         instagramLink: { type: String },
         facebookLink: { type: String },
         youtubeLink: { type: String },
-        subscription: { type: Schema.Types.ObjectId, ref: 'SubscriptionPlan' },
+        subscription: { type: mongoose.Schema.Types.ObjectId, ref: 'SubscriptionPlan' },
         verified_email: { type: String },
         picture: { type: String },
         google_id: { type: String },
@@ -52,4 +52,4 @@ const userSchema = new Schema<UserModel>(
     { collection: 'users', timestamps: true },
 );
 
-export const UserSchema: Model<UserModel> = mongoose.model<UserModel>('User', userSchema);
+export const UserSchema = mongoose.model<UserModel>('User', userSchema);

@@ -25,9 +25,9 @@ const contentSchema = new mongoose.Schema({
     },
 });
 
-const postSchema = new mongoose.Schema({
+const postSchema = new mongoose.Schema<PostModel>({
     userId: {
-        type: mongoose.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'Admin'
     },
     content: { type: contentSchema },

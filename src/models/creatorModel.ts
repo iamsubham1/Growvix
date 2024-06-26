@@ -21,6 +21,7 @@ export interface CreatorModel extends mongoose.Document {
     instagramLink: string;
     youtubeLink: string;
     facebookLink?: string;
+    skills?: string[];
 
 }
 
@@ -36,7 +37,7 @@ const addressSchema = new mongoose.Schema({
     },
 });
 
-const creatorSchema = new mongoose.Schema(
+const creatorSchema = new mongoose.Schema<CreatorModel>(
     {
         name: {
             type: String,
@@ -71,6 +72,7 @@ const creatorSchema = new mongoose.Schema(
         instagramLink: { type: String },
         facebookLink: { type: String },
         youtubeLink: { type: String },
+        skills: { type: [String] }
     },
     {
         collection: 'creators',

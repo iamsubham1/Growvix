@@ -33,9 +33,13 @@ router.route('/uploadpic').post([checkJWT], userController.uploadImg); //new add
 router.route('/allCategories').get(userController.getAllBusinessCategory);
 
 //Plan routes
-router.route('/getplans').get(planController.getAllPlans);
+router.route('/getplans/:userId?').get(planController.getAllPlans);
 router.route('/getplans/billingtype/:id').get(planController.getPlansByBillingType);
 router.route('/getSubscriptions').get(billingTypeController.getAllBillingTypes);
+
+//Task Routes
+router.route('/createTask').post([checkJWT], userController.createTask);
+router.route('/getTasks').get([checkJWT], userController.getAllTasks);
 
 // Google Authentication routes
 router.get('/google', googleAuthController.initiateGoogleLogin);
