@@ -500,4 +500,26 @@ export class UserService {
             });
         }
     };
+
+    updateTaskStatus = async (req: Request & { user: any }, res: Response) => {
+        try {
+            const taskId = req.params?.id
+
+
+            if (!taskId) {
+                return responseStatus(res, 400, msg.common.invalidRequest, null);
+            }
+            const updatedTask = await this.taskRepository.updateById(taskId, req.body)
+            if (!updatedTask) {
+                return responseStatus(res, 404, msg.task.notFound, null);
+            }
+
+            return responseStatus(res, 200, 'status updated successfully', updatedTask);
+
+        } catch (error) {
+            console.error("Error updating task status:", error);
+            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+        }
+
+    }
 }

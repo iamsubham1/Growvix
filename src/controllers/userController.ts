@@ -4,6 +4,7 @@ import { responseStatus } from '../helper/responses';
 import { msg } from '../helper/messages';
 import { UserService } from '../services/userService';
 import { BusinessService } from '../services/businessCategoryServices';
+import { assert } from 'console';
 
 @Service()
 export class UserController {
@@ -149,6 +150,14 @@ export class UserController {
         }
     };
 
+    updateTaskStatus = async (req: Request & { user: any }, res: Response) => {
+        try {
+            return await this.userService.updateTaskStatus(req, res);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+
+        }
+    };
 
     taskStats = async (req: Request & { user: any }, res: Response) => {
         try {
@@ -157,7 +166,7 @@ export class UserController {
             return responseStatus(res, 500, msg.common.somethingWentWrong, error);
 
         }
-    }
+    };
 }
 
 

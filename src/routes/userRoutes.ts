@@ -41,6 +41,7 @@ router.route('/getSubscriptions').get(billingTypeController.getAllBillingTypes);
 router.route('/createTask').post([checkJWT], userController.createTask);//new added tested works
 router.route('/getTasks').get([checkJWT], userController.getAllTasks);//new added tested works
 router.route('/taskstats').get([checkJWT], userController.taskStats);//new added tested works
+router.route('/taskStatusUpdate/:id').patch([checkJWT], userController.updateTaskStatus);//new added tested works
 // Google Authentication routes
 router.get('/google', googleAuthController.initiateGoogleLogin);
 router.get('/google/callback', googleAuthController.handleGoogleCallback);
