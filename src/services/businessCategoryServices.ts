@@ -9,8 +9,8 @@ import { BusinessCategoryRepository } from '../repository/categoryRepository';
 import { BusinessCategoryModel } from '../models/businessCategoryModel';
 
 @Service()
-export class BusinessService {
-    constructor(@Inject() private businessRepository: BusinessCategoryRepository) {}
+export class BusinessCategoryService {
+    constructor(@Inject() private businessRepository: BusinessCategoryRepository) { }
 
     create = async (req: Request, res: Response) => {
         try {

@@ -1,6 +1,5 @@
-import { UserModel, UserSchema } from '../models/userModel';
+import { UserModel, UserSchema, BusinessModel } from '../models/userModel';
 import { Service } from 'typedi';
-import uploadImage from '../helper/uploadImage'; // Import the uploadImage function from your helper
 
 @Service()
 export class UserRepository {

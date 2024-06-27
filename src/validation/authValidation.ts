@@ -38,7 +38,9 @@ export const CreatorValidation: Joi.ObjectSchema = Joi.object().keys({
     creatorType: Joi.string().min(3),
     isDeleted: Joi.boolean(),
     status: Joi.string().min(5)
-})
+});
+
+
 export const EmailPassValidate: Joi.ObjectSchema = Joi.object().keys({
     email: Joi.string().email({ minDomainSegments: 2 }),
     password: Joi.string(),

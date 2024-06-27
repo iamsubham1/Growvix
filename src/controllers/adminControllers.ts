@@ -1,19 +1,17 @@
 import { AdminService } from '../services/adminServices';
-
 import { Inject, Service } from 'typedi';
 import { responseStatus } from '../helper/responses';
 import { msg } from '../helper/messages';
 import { Request, Response } from 'express';
-import { BusinessService } from '../services/businessCategoryServices';
+import { BusinessCategoryService } from '../services/businessCategoryServices';
 import { SubscriptionService } from '../services/subscriptionService';
-import { UserService } from '../services/userService';
 
 
 @Service()
 export class AdminController {
     constructor(
         @Inject() private adminService: AdminService,
-        private businessService: BusinessService,
+        private businessService: BusinessCategoryService,
         private subscriptionService: SubscriptionService,
     ) { }
 
@@ -42,7 +40,7 @@ export class AdminController {
     };
 
     //soft delete(admin/employee)
-    deleteAdmin = async (req: Request & { user: any }, res: Response) => {
+    delete = async (req: Request & { user: any }, res: Response) => {
         try {
             return await this.adminService.softDelete(req, res);
         } catch (error) {
@@ -74,15 +72,15 @@ export class AdminController {
         }
     };
 
-    updatePassword = async (req: Request & { user: any }, res: Response) => {
-        try {
+    // updatePassword = async (req: Request & { user: any }, res: Response) => {
+    //     try {
 
-            return await this.adminService.updatePassword(req, res);
+    //         return await this.adminService.updatePassword(req, res);
 
-        } catch (error) {
-            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
-        }
-    };
+    //     } catch (error) {
+    //         return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+    //     }
+    // };
 
     getAllEmployee = async (req: Request, res: Response) => {
         try {
@@ -108,15 +106,13 @@ export class AdminController {
         }
     };
 
-
-    updateMultipleEmployeeStatus = async (req: Request & { user: any }, res: Response) => {
-        try {
-            return await this.adminService.updateMultipleStatus(req, res);
-        } catch (error) {
-            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
-        }
-    };
-
+    // updateMultipleEmployeeStatus = async (req: Request & { user: any }, res: Response) => {
+    //     try {
+    //         return await this.adminService.updateMultipleStatus(req, res);
+    //     } catch (error) {
+    //         return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+    //     }
+    // };
 
     assignBusiness = async (req: Request & { user: any }, res: Response) => {
         try {
@@ -126,7 +122,7 @@ export class AdminController {
         }
     }
 
-    uploadImg = async (req: Request, res: Response) => {
+    uploadImg = async (req: Request & { user: any }, res: Response) => {
         try {
             const result = await this.adminService.uploadUserProfileImage(req, res);
             return result;

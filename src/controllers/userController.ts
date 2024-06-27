@@ -3,14 +3,13 @@ import { Request, Response } from 'express';
 import { responseStatus } from '../helper/responses';
 import { msg } from '../helper/messages';
 import { UserService } from '../services/userService';
-import { BusinessService } from '../services/businessCategoryServices';
-import { assert } from 'console';
+import { BusinessCategoryService } from '../services/businessCategoryServices';
 
 @Service()
 export class UserController {
     constructor(
         @Inject() private userService: UserService,
-        private businessService: BusinessService,
+        private businessService: BusinessCategoryService,
     ) { }
 
     // User Operations
@@ -39,24 +38,24 @@ export class UserController {
         }
     };
 
-    deleteUser = async (req: Request & { user: any }, res: Response) => {
-        try {
-            return await this.userService.delete(req, res);
-        } catch (error) {
-            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
-        }
-    };
+    // deleteUser = async (req: Request & { user: any }, res: Response) => {
+    //     try {
+    //         return await this.userService.delete(req, res);
+    //     } catch (error) {
+    //         return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+    //     }
+    // };
 
-    //search business by id for admin
-    findUserById = async (req: Request & { user: any }, res: Response) => {
-        try {
-            return await this.userService.findUserById(req, res);
-        } catch (error) {
-            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
-        }
-    };
+    // //search business by id for admin
+    // findUserById = async (req: Request & { user: any }, res: Response) => {
+    //     try {
+    //         return await this.userService.findUserById(req, res);
+    //     } catch (error) {
+    //         return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+    //     }
+    // };
 
-    // Business Operations
+    // // Business Operations
 
     getAllBusinessCategory = async (req: Request, res: Response) => {
         try {
@@ -74,44 +73,44 @@ export class UserController {
         }
     };
 
-    updateStatus = async (req: Request, res: Response) => {
-        try {
-            return await this.userService.updateBusinessStatus(req, res);
-        } catch (error) {
-            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
-        }
-    };
+    // updateStatus = async (req: Request, res: Response) => {
+    //     try {
+    //         return await this.userService.updateBusinessStatus(req, res);
+    //     } catch (error) {
+    //         return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+    //     }
+    // };
 
 
-    updateMultipleStatus = async (req: Request, res: Response) => {
-        try {
-            return await this.userService.updateMultipleBusinessStatus(req, res);
-        } catch (error) {
-            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
-        }
-    };
-    // Image Upload
+    // updateMultipleStatus = async (req: Request, res: Response) => {
+    //     try {
+    //         return await this.userService.updateMultipleBusinessStatus(req, res);
+    //     } catch (error) {
+    //         return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+    //     }
+    // };
+    // // Image Upload
 
-    uploadImg = async (req: Request & { user: any }, res: Response) => {
-        try {
-            const result = await this.userService.uploadUserProfileImage(req, res);
-            return result;
-        } catch (error) {
-            console.error('Error uploading profile image:', error);
-            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
-        }
-    };
+    // uploadImg = async (req: Request & { user: any }, res: Response) => {
+    //     try {
+    //         const result = await this.userService.uploadUserProfileImage(req, res);
+    //         return result;
+    //     } catch (error) {
+    //         console.error('Error uploading profile image:', error);
+    //         return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+    //     }
+    // };
 
 
-    updatePassword = async (req: Request & { user: any }, res: Response) => {
-        try {
+    // updatePassword = async (req: Request & { user: any }, res: Response) => {
+    //     try {
 
-            return await this.userService.updatePassword(req, res);
+    //         return await this.userService.updatePassword(req, res);
 
-        } catch (error) {
-            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
-        }
-    };
+    //     } catch (error) {
+    //         return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+    //     }
+    // };
 
     searchBusiness = async (req: Request & { user: any }, res: Response) => {
         try {
@@ -123,50 +122,50 @@ export class UserController {
         }
     };
 
-    getBusinessStats = async (req: Request, res: Response) => {
-        try {
-            return await this.userService.getBusinessStats(req, res);
-        } catch (error) {
-            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+    // getBusinessStats = async (req: Request, res: Response) => {
+    //     try {
+    //         return await this.userService.getBusinessStats(req, res);
+    //     } catch (error) {
+    //         return responseStatus(res, 500, msg.common.somethingWentWrong, error);
 
-        }
-    };
+    //     }
+    // };
 
-    createTask = async (req: Request & { user: any }, res: Response) => {
-        try {
-            return await this.userService.createTask(req, res);
-        } catch (error) {
-            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+    // createTask = async (req: Request & { user: any }, res: Response) => {
+    //     try {
+    //         return await this.userService.createTask(req, res);
+    //     } catch (error) {
+    //         return responseStatus(res, 500, msg.common.somethingWentWrong, error);
 
-        }
-    };
+    //     }
+    // };
 
-    getAllTasks = async (req: Request & { user: any }, res: Response) => {
-        try {
-            return await this.userService.getAllTasks(req, res);
-        } catch (error) {
-            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+    // getAllTasks = async (req: Request & { user: any }, res: Response) => {
+    //     try {
+    //         return await this.userService.getAllTasks(req, res);
+    //     } catch (error) {
+    //         return responseStatus(res, 500, msg.common.somethingWentWrong, error);
 
-        }
-    };
+    //     }
+    // };
 
-    updateTaskStatus = async (req: Request & { user: any }, res: Response) => {
-        try {
-            return await this.userService.updateTaskStatus(req, res);
-        } catch (error) {
-            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+    // updateTaskStatus = async (req: Request & { user: any }, res: Response) => {
+    //     try {
+    //         return await this.userService.updateTaskStatus(req, res);
+    //     } catch (error) {
+    //         return responseStatus(res, 500, msg.common.somethingWentWrong, error);
 
-        }
-    };
+    //     }
+    // };
 
-    taskStats = async (req: Request & { user: any }, res: Response) => {
-        try {
-            return await this.userService.getTaskStatistics(req, res);
-        } catch (error) {
-            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+    // taskStats = async (req: Request & { user: any }, res: Response) => {
+    //     try {
+    //         return await this.userService.getTaskStatistics(req, res);
+    //     } catch (error) {
+    //         return responseStatus(res, 500, msg.common.somethingWentWrong, error);
 
-        }
-    };
+    //     }
+    // };
 }
 
 

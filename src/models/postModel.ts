@@ -30,7 +30,9 @@ const postSchema = new mongoose.Schema<PostModel>({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Admin'
     },
+
     content: { type: contentSchema },
+
     scheduledTime: { type: Date },
     status: {
         type: String,

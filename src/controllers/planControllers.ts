@@ -3,14 +3,13 @@ import { responseStatus } from '../helper/responses';
 import { msg } from '../helper/messages';
 import { Request, Response } from 'express';
 import { PlanService } from '../services/planServices';
-import { SubscriptionService } from '../services/subscriptionService';
 
 @Service()
 export class PlanController {
     constructor(
         @Inject() private planService: PlanService,
-        @Inject() private subscriptionService: SubscriptionService,
-    ) {}
+
+    ) { }
 
     addPlan = async (req: Request, res: Response) => {
         try {
