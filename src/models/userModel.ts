@@ -49,7 +49,6 @@ export interface AdminModel extends mongoose.Document {
 }
 
 export interface CreatorModel extends mongoose.Document {
-    phoneNumber: string;
     avatar: string;
     address: Address;
     creatorType: 'Influencer' | 'Editor' | 'Videographer';
@@ -62,7 +61,6 @@ export interface CreatorModel extends mongoose.Document {
 }
 
 export interface BusinessModel extends mongoose.Document {
-    phoneNumber: string;
     businessName: string;
     businessCategory: mongoose.Types.ObjectId;
     instagramLink: string;
@@ -160,7 +158,7 @@ export interface UserModel extends mongoose.Document {
     email: string;
     password: string;
     isDeleted: boolean;
-    phoneNumber: string;
+    phoneNumber?: string;
     picture?: string;
     status: string;
     admin?: AdminModel;
@@ -180,7 +178,7 @@ const userSchema = new mongoose.Schema<UserModel>(
         password: { type: String },
         isDeleted: { type: Boolean },
         status: { type: String },
-        phoneNumber: { type: String, unique: true, sparse: true },
+        phoneNumber: { type: String, unique: true, sparse: true, default: null, },
         admin: adminSchema,
         business: businessSchema,
         creator: creatorSchema,

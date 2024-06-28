@@ -3,20 +3,21 @@ import { msg } from '../helper/messages';
 import * as argon2 from 'argon2';
 import { responseStatus } from '../helper/responses';
 import { Request, Response } from 'express';
-import { CreatorRepository } from '../repository/creatorRepository';
 import { Inject, Service } from 'typedi';
 import { jwtSignIN } from '../configuration/config';
-import { CreatorModel } from '../models/creatorModel';
 import * as dotenv from 'dotenv';
 import sendEmailWithPassword from '../helper/sendMail';
 import uploadImage from '../helper/uploadImage';
 import { userObjectCleanUp } from '../helper/utils';
+import { MainRepository } from '../repository/mainRepository';
+
+import { UserModel, UserSchema } from '../models/userModel';
 
 dotenv.config();
 
 @Service()
 export class CreatorService {
-    constructor(@Inject() private creatorRepository: CreatorRepository) { }
+    constructor(@Inject() private creatorRepository: MainRepository) { }
 
     private generatePassword(): string {
         const randomNumber = Math.floor(Math.random() * 10000);
@@ -26,32 +27,54 @@ export class CreatorService {
 
     save = async (req: Request, res: Response) => {
         try {
-            const creator: CreatorModel = req.body;
-            if (!creator.email) {
-                return responseStatus(res, 400, msg.user.emailRequired, null);
+            const { name, email, phoneNumber, ...other } = req.body;
+
+            // Validate required fields
+            if (!name || !email) {
+                return responseStatus(res, 400, 'Name and email are required', null);
             }
 
-            const existingCreator = await this.creatorRepository.findByEmail(creator.email);
+            const existingCreator = await this.creatorRepository.findByEmail({ email: email });
             if (existingCreator) {
                 return responseStatus(res, 400, msg.user.userEmailExist, null);
             }
 
+            if (phoneNumber) {
+                const existingUserByPhoneNumber = await this.creatorRepository.findByPhoneNumber(phoneNumber.toString());
+                if (existingUserByPhoneNumber) {
+                    return responseStatus(res, 400, msg.user.userPhoneNumberExist, null);
+                }
+            }
             // Generate and hash password
             const generatedPassword = this.generatePassword();
             console.log(generatedPassword);
-            creator.password = await argon2.hash(generatedPassword);
-            creator.isDeleted = false;
-            creator.status = "ACTIVE"
+            const hashedPassword = await argon2.hash(generatedPassword);
+
+
+            const newUser: UserModel = new UserSchema({
+                type: 'Creator',
+                name: name,
+                email: email,
+                password: hashedPassword,
+                phoneNumber: phoneNumber || null,
+                isDeleted: false,
+                status: 'Active',
+                creator: {
+                    ...other,
+
+                }
+            });
+
 
             // Save creator to database
-            const newCreator = await this.creatorRepository.save(creator);
+            const newCreator = await this.creatorRepository.save(newUser);
             if (!newCreator) {
                 return responseStatus(res, 500, msg.user.errorInSaving, null);
             }
 
             // Send email with the auto-generated password
 
-            await sendEmailWithPassword(creator.email, generatedPassword);
+            await sendEmailWithPassword(email, generatedPassword);
 
 
 
@@ -70,7 +93,7 @@ export class CreatorService {
         try {
             const { emailOrPhoneNumber, password }: { emailOrPhoneNumber: string; password: string } = req.body;
 
-            let user = await this.creatorRepository.findByEmail(emailOrPhoneNumber);
+            let user = await this.creatorRepository.findByEmail({ email: emailOrPhoneNumber });
 
             if (!user) {
                 const isPhoneNumber = /^\d+$/.test(emailOrPhoneNumber);
@@ -131,7 +154,7 @@ export class CreatorService {
             const { page = 1, limit = 10 } = req.query;
             const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
 
-            const allCreators = await this.creatorRepository.findAll({ isDeleted: false }, skip, parseInt(limit as string));
+            const allCreators = await this.creatorRepository.findAll({ isDeleted: false, type: 'Creator' }, skip, parseInt(limit as string));
             if (!allCreators.length) {
                 return responseStatus(res, 200, msg.user.fetchedSuccessfully, "No Creators Exist");
             }
@@ -224,33 +247,33 @@ export class CreatorService {
         }
     };
 
-    uploadUserProfileImage = async (req: Request & { user: any }, res: Response) => {
-        try {
+    // uploadUserProfileImage = async (req: Request & { user: any }, res: Response) => {
+    //     try {
 
-            const userId = req.params?.id || req.user?.payload?.userId;
+    //         const userId = req.params?.id || req.user?.payload?.userId;
 
-            if (!userId) {
-                return responseStatus(res, 400, msg.common.invalidRequest, null);
-            }
+    //         if (!userId) {
+    //             return responseStatus(res, 400, msg.common.invalidRequest, null);
+    //         }
 
-            const secure_url = await uploadImage(req, res);
+    //         const secure_url = await uploadImage(req, res);
 
-            if (secure_url) {
-                const updateData = { avatar: secure_url };
-                const updatedUser = await this.creatorRepository.updateById(userId, updateData);
-                return responseStatus(res, 200, 'Uploaded successfully', updatedUser);
-            } else {
-                return responseStatus(res, 500, msg.common.somethingWentWrong, 'Failed to upload image');
-            }
+    //         if (secure_url) {
+    //             const updateData = { avatar: secure_url };
+    //             const updatedUser = await this.creatorRepository.updateById(userId, updateData);
+    //             return responseStatus(res, 200, 'Uploaded successfully', updatedUser);
+    //         } else {
+    //             return responseStatus(res, 500, msg.common.somethingWentWrong, 'Failed to upload image');
+    //         }
 
-        } catch (error) {
-            if (error.statusCode) {
-                return responseStatus(res, error.statusCode, error.message, null);
-            }
-            console.error('Error uploading profile image:', error);
-            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
-        }
-    };
+    //     } catch (error) {
+    //         if (error.statusCode) {
+    //             return responseStatus(res, error.statusCode, error.message, null);
+    //         }
+    //         console.error('Error uploading profile image:', error);
+    //         return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+    //     }
+    // };
 
 
     updatePassword = async (req: Request & { user: any }, res: Response) => {

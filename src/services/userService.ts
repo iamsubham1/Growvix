@@ -3,12 +3,11 @@ import { msg } from '../helper/messages';
 import * as argon2 from 'argon2';
 import { responseStatus } from '../helper/responses';
 import { Request, Response } from 'express';
-import { UserRepository } from '../repository/userRepository';
 import { Inject, Service } from 'typedi';
 import { jwtSignIN } from '../configuration/config';
 import { userObjectCleanUp } from '../helper/utils';
 import * as dotenv from 'dotenv';
-import { AdminModel, UserModel, UserSchema } from '../models/userModel';
+import { UserModel, UserSchema } from '../models/userModel';
 import sendEmailWithPassword from '../helper/sendMail';
 import uploadImage from '../helper/uploadImage';
 import { TaskRepository } from '../repository/taskRepository';
@@ -25,18 +24,20 @@ export class UserService {
 
     private generatePassword(): string {
         const randomNumber = Math.floor(Math.random() * 10000);
-        return `GrowVix@sicdigit${randomNumber}`;
+        return `GrowVix@${randomNumber}`;
     }
 
     save = async (req: Request, res: Response) => {
         try {
             const user = req.body;
-            if (!user.email && !user.phoneNumber) {
-                return responseStatus(res, 400, msg.user.userEmailAndPhoneNumberNotExist, null);
+            console.log(user);
+
+            if (!user.name || !user.email || !user.phoneNumber) {
+                return responseStatus(res, 400, 'Name, email are required fields.', null);
             }
+
             if (user.email) {
                 const existingUserByEmail = await this.userRepository.findByEmail({ 'email': user.email });
-                console.log(existingUserByEmail);
                 if (existingUserByEmail) {
                     return responseStatus(res, 400, msg.user.userEmailExist, null);
                 }
@@ -61,6 +62,7 @@ export class UserService {
                 password: hashedPassword,
                 isDeleted: false,
                 status: 'Active',
+                phoneNumber: user.phoneNumber,
                 business: {
                     ...user
                 }
@@ -85,7 +87,7 @@ export class UserService {
             console.error(error);
             return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
         }
-    };
+    };// testesd works
 
     login = async (req: Request, res: Response) => {
         try {
@@ -121,16 +123,23 @@ export class UserService {
             console.error(error);
             return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
         }
-    };
+    };// testesd works
 
     updateAccount = async (req: Request & { user: any }, res: Response) => {
         try {
             const _id = req.user?.payload?.userId;
+            console.log(_id);
             if (!_id) {
                 return responseStatus(res, 400, msg.common.invalidRequest, null);
             }
             const updateData = req.body;
             console.log(updateData);
+            if (updateData.phoneNumber) {
+                const existingUserByPhoneNumber = await this.userRepository.findByPhoneNumber(updateData.phoneNumber.toString());
+                if (existingUserByPhoneNumber && existingUserByPhoneNumber._id.toString() !== _id) {
+                    return responseStatus(res, 400, msg.user.userPhoneNumberExist, null);
+                }
+            };
             const updatedUser = await this.userRepository.updateById(_id, updateData);
             if (!updatedUser) {
                 return responseStatus(res, 404, msg.user.userNotFound, null);
@@ -140,82 +149,86 @@ export class UserService {
             console.error(error);
             return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
         }
+    };// testesd works
+
+    //soft delete
+    delete = async (req: Request & { user: any }, res: Response) => {
+        try {
+            const _id = req.params.id || req.user?.payload?.userId;
+            if (!_id) {
+                return responseStatus(res, 400, msg.common.invalidRequest, null);
+            }
+            await this.userRepository.softDeleteById(_id);
+            return responseStatus(res, 200, msg.user.userDeletedSuccess, {});
+        } catch (error) {
+            console.error(error);
+            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+        }
     };
 
-    //     //soft delete
-    //     delete = async (req: Request & { user: any }, res: Response) => {
-    //         try {
-    //             const _id = req.params.id
-    //             if (!_id) {
-    //                 return responseStatus(res, 400, msg.common.invalidRequest, null);
-    //             }
-    //             await this.userRepository.softDeleteById(_id);
-    //             return responseStatus(res, 200, msg.user.userDeletedSuccess, {});
-    //         } catch (error) {
-    //             console.error(error);
-    //             return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+    // findUserByEmail = async (req: Request & { user: any }, res: Response) => {
+    //     try {
+    //         const email = req.body.email;
+    //         if (!email) {
+    //             return responseStatus(res, 400, msg.common.emptyBody, null);
     //         }
-    //     };
-
-    //     findUserByEmail = async (req: Request & { user: any }, res: Response) => {
-    //         try {
-    //             const email = req.body.email;
-    //             if (!email) {
-    //                 return responseStatus(res, 400, msg.common.emptyBody, null);
-    //             }
-    //             const user = await this.userRepository.findByEmail(email);
-    //             if (user && user.isDeleted == false) {
-    //                 return responseStatus(res, 200, msg.user.userEmailExist, true);
-    //             }
-    //             return responseStatus(res, 200, msg.user.userEmailNotExist, false);
-    //         } catch (error) {
-    //             console.error(error);
-    //             return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+    //         const user = await this.userRepository.findByEmail({ email, isDeleted: false, type: 'Business' });
+    //         if (user && user.isDeleted == false) {
+    //             return responseStatus(res, 200, msg.user.userEmailExist, true);
     //         }
-    //     };
-
-    //     findUserById = async (req: Request & { user: any }, res: Response) => {
-    //         try {
-    //             const userId = req.params.id;
-
-    //             const user = await this.userRepository.findById(userId);
-    //             if (user.isDeleted == false) {
-    //                 return responseStatus(res, 200, msg.user.userFound, user);
-    //             }
-    //             return responseStatus(res, 200, msg.user.userNotExist, false);
-    //         } catch (error) {
-    //             console.error(error);
-    //             return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
-    //         }
-    //     };
-
-    //     async findOrCreateUser(profile: any): Promise<{ existingUser: boolean; user: UserModel | null; token: string | null }> {
-    //         let user = await this.userRepository.findByEmail(profile.email);
-
-    //         if (!user) {
-    //             user = new UserSchema({
-    //                 email: profile?.email,
-    //                 name: profile?.name,
-    //                 google_id: profile?.id,
-    //                 verified_email: profile?.verified_email,
-    //                 avatar: profile?.picture,
-    //             });
-
-    //             user = await this.userRepository.save(user);
-
-    //             // Generate JWT token for the new user
-    //             const token = jwt.sign({ userId: user._id }, jwtSignIN.secret);
-    //             return { existingUser: false, user, token };
-    //         }
-
-    //         // Populate related data for existing user
-    //         user = await UserSchema.findById(user._id).populate('subscription').populate('businessCategory').exec();
-
-    //         // Generate JWT token for the existing user
-    //         const token = jwt.sign({ userId: user._id }, jwtSignIN.secret);
-
-    //         return { existingUser: true, user, token };
+    //         return responseStatus(res, 200, msg.user.userEmailNotExist, false);
+    //     } catch (error) {
+    //         console.error(error);
+    //         return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
     //     }
+    // };
+
+    findUserById = async (req: Request & { user: any }, res: Response) => {
+        try {
+            const userId = req.params.id;
+
+            const user = await this.userRepository.findById(userId);
+            if (user.isDeleted == false && user.type == 'Business') {
+                return responseStatus(res, 200, msg.user.userFound, user);
+            }
+            return responseStatus(res, 200, msg.user.userNotExist, false);
+        } catch (error) {
+            console.error(error);
+            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+        }
+    };
+
+    async findOrCreateUser(profile: any): Promise<{ existingUser: boolean; user: UserModel | null; token: string | null }> {
+        let user = await this.userRepository.findByEmail(profile.email);
+
+        if (!user) {
+            user = new UserSchema({
+                type: 'Business',
+                email: profile?.email,
+                name: profile?.name,
+                business: {
+                    google_id: profile?.id,
+                    verified_email: profile?.verified_email,
+                },
+
+                picture: profile?.picture,
+            });
+
+            user = await this.userRepository.save(user);
+
+            // Generate JWT token for the new user
+            const token = jwt.sign({ userId: user._id }, jwtSignIN.secret);
+            return { existingUser: false, user, token };
+        }
+
+        // Populate related data for existing user
+        user = await UserSchema.findById(user._id).populate('subscription').populate('businessCategory').exec();
+
+        // Generate JWT token for the existing user
+        const token = jwt.sign({ userId: user._id }, jwtSignIN.secret);
+
+        return { existingUser: true, user, token };
+    };
 
     getAllUsers = async (req: Request, res: Response) => {
         try {
@@ -237,126 +250,147 @@ export class UserService {
             console.error(error);
             return responseStatus(res, 500, msg.user.fetchFailed, 'An unknown error occurred');
         }
+    };// testesd works
+
+    updateBusinessStatus = async (req: Request, res: Response) => {
+        try {
+            const _id = req.params.id;
+            const { status } = req.body;
+            console.log(status);
+
+            if (!_id || typeof status !== 'string') {
+                return responseStatus(res, 400, msg.common.invalidRequest, null);
+            }
+
+            const updatedUser = await this.userRepository.updateStatusById(_id, status);
+
+            if (!updatedUser) {
+                return responseStatus(res, 404, msg.user.userNotExist, null);
+            }
+
+            return responseStatus(res, 200, 'status updated successfully', updatedUser);
+        } catch (error) {
+            console.error("Error updating business status:", error);
+            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+        }
     };
 
-    //     updateBusinessStatus = async (req: Request, res: Response) => {
-    //         try {
-    //             const _id = req.params.id;
-    //             const { status } = req.body;
-    //             console.log(status);
+    updateMultipleBusinessStatus = async (req: Request, res: Response) => {
+        try {
+            const ids: string[] = req.body.ids;
+            const { status } = req.body;
 
-    //             if (!_id || typeof status !== 'string') {
-    //                 return responseStatus(res, 400, msg.common.invalidRequest, null);
-    //             }
+            // Validate input
+            if (!Array.isArray(ids) || ids.length === 0 || typeof status !== 'string') {
+                return responseStatus(res, 400, msg.common.invalidRequest, null);
+            }
 
-    //             const updatedUser = await this.userRepository.updateBusinessStatusId(_id, status);
+            const updatedUsers = await Promise.all(
+                ids.map(async (_id) => {
+                    const updatedUser = await this.userRepository.updateStatusById(_id, status);
+                    return updatedUser;
+                })
+            );
 
-    //             if (!updatedUser) {
-    //                 return responseStatus(res, 404, msg.user.userNotExist, null);
-    //             }
+            if (updatedUsers.some((user) => !user)) {
+                return responseStatus(res, 404, msg.user.userNotExist, null);
+            }
 
-    //             return responseStatus(res, 200, 'status updated successfully', updatedUser);
-    //         } catch (error) {
-    //             console.error("Error updating business status:", error);
-    //             return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
-    //         }
-    //     };
+            return responseStatus(res, 200, 'Status updated successfully', updatedUsers);
+        } catch (error) {
+            console.error("Error updating business statuses:", error);
+            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+        }
+    }
 
-    //     updateMultipleBusinessStatus = async (req: Request, res: Response) => {
-    //         try {
-    //             const ids: string[] = req.body.ids;
-    //             const { status } = req.body;
+    uploadUserProfileImage = async (req: Request & { user: any }, res: Response) => {
+        try {
 
-    //             // Validate input
-    //             if (!Array.isArray(ids) || ids.length === 0 || typeof status !== 'string') {
-    //                 return responseStatus(res, 400, msg.common.invalidRequest, null);
-    //             }
-
-    //             const updatedUsers = await Promise.all(
-    //                 ids.map(async (_id) => {
-    //                     const updatedUser = await this.userRepository.updateBusinessStatusId(_id, status);
-    //                     return updatedUser;
-    //                 })
-    //             );
-
-    //             if (updatedUsers.some((user) => !user)) {
-    //                 return responseStatus(res, 404, msg.user.userNotExist, null);
-    //             }
-
-    //             return responseStatus(res, 200, 'Status updated successfully', updatedUsers);
-    //         } catch (error) {
-    //             console.error("Error updating business statuses:", error);
-    //             return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
-    //         }
-    //     }
-
-    //     uploadUserProfileImage = async (req: Request & { user: any }, res: Response) => {
-    //         try {
-
-    //             const userId = req.params?.id || req.user?.payload?.userId;
+            const userId = req.params?.id || req.user?.payload?.userId;
 
 
-    //             if (!userId) {
-    //                 return responseStatus(res, 400, msg.common.invalidRequest, null);
-    //             }
+            if (!userId) {
+                return responseStatus(res, 400, msg.common.invalidRequest, null);
+            }
 
-    //             const secure_url = await uploadImage(req, res);
+            const secure_url = await uploadImage(req, res);
 
-    //             if (secure_url) {
-    //                 const updateData = { picture: secure_url };
-    //                 const updatedUser = await this.userRepository.updateById(userId, updateData);
-    //                 return responseStatus(res, 200, 'Uploaded successfully', updatedUser);
-    //             } else {
-    //                 return responseStatus(res, 500, msg.common.somethingWentWrong, 'Failed to upload image');
-    //             }
+            if (secure_url) {
+                const updateData = { picture: secure_url };
+                const updatedUser = await this.userRepository.updateById(userId, updateData);
+                return responseStatus(res, 200, 'Uploaded successfully', updatedUser);
+            } else {
+                return responseStatus(res, 500, msg.common.somethingWentWrong, 'Failed to upload image');
+            }
 
-    //         } catch (error) {
-    //             if (error.statusCode) {
-    //                 return responseStatus(res, error.statusCode, error.message, null);
-    //             }
-    //             console.error('Error uploading profile image:', error);
-    //             return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
-    //         }
-    //     };
+        } catch (error) {
+            if (error.statusCode) {
+                return responseStatus(res, error.statusCode, error.message, null);
+            }
+            console.error('Error uploading profile image:', error);
+            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+        }
+    };
 
-    //     updatePassword = async (req: Request & { user: any }, res: Response) => {
-    //         try {
-    //             const _id = req.user?.payload?.userId;
-    //             const { oldPassword, newPassword } = req.body;
+    updatePassword = async (req: Request & { user: any }, res: Response) => {
+        try {
+            const _id = req.user?.payload?.userId;
+            const { oldPassword, newPassword } = req.body;
 
-    //             const user = await this.userRepository.findById(_id);
+            const user = await this.userRepository.findById(_id);
 
-    //             if (!user) {
-    //                 return responseStatus(res, 404, msg.user.userNotFound, null);
-    //             }
+            if (!user) {
+                return responseStatus(res, 404, msg.user.userNotFound, null);
+            }
 
-    //             const passwordMatch = await argon2.verify(user.password, oldPassword);
+            const passwordMatch = await argon2.verify(user.password, oldPassword);
 
-    //             if (!passwordMatch) {
-    //                 return responseStatus(res, 401, msg.user.oldPasswordError, null);
-    //             }
+            if (!passwordMatch) {
+                return responseStatus(res, 401, msg.user.oldPasswordError, null);
+            }
 
-    //             const hashedNewPassword = await argon2.hash(newPassword);
+            const hashedNewPassword = await argon2.hash(newPassword);
 
-    //             user.password = hashedNewPassword;
-    //             const updateData = { password: hashedNewPassword };
-    //             const updatedUser = await this.userRepository.updateById(_id, updateData);
+            const updateData = { password: hashedNewPassword };
+            const updatedUser = await this.userRepository.updateById(_id, updateData);
 
-    //             if (!updatedUser) {
-    //                 return responseStatus(res, 500, msg.user.userNotFound, null);
-    //             }
+            if (!updatedUser) {
+                return responseStatus(res, 500, msg.user.userNotFound, null);
+            }
 
-    //             return responseStatus(res, 200, msg.user.PasswordChangeSuccessfully, null);
-    //         } catch (error) {
-    //             return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
-    //         }
-    //     };
+            return responseStatus(res, 200, msg.user.PasswordChangeSuccessfully, null);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+        }
+    };
 
     searchBusinessByName = async (req: Request & { user: any }, res: Response) => {
         try {
             const keyword = req.params.keyword;
             const regex = new RegExp(keyword, 'i');
-            const results = await this.userRepository.findAll({ 'business.businessName': { $regex: regex } });
+            const results = await this.userRepository.findAllWithPopulate(
+                { 'business.businessName': { $regex: regex } },
+                [
+                    {
+                        path: 'business.subscription',
+                        select: 'status endDate',
+                        populate: [
+                            {
+                                path: 'plan',
+                                select: 'name price',
+                            },
+                            {
+                                path: 'billingType',
+                                select: 'name',
+                            },
+                        ],
+                    },
+                    {
+                        path: 'business.businessCategory',
+                        select: 'name',
+                    },
+                ]
+            );
 
             if (!results.length) {
                 return responseStatus(res, 404, msg.user.userNotExist, null);
@@ -367,175 +401,175 @@ export class UserService {
             console.error(`Error occurred while searching for businesses: ${error.message}`);
             return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
         }
+    };// testesd works(populated)
+
+    getBusinessStats = async (req: Request, res: Response) => {
+        try {
+            const totalUsers = await this.userRepository.countTotalUsers();
+
+            const now = new Date();
+            let startDate: Date;
+
+            const timeframe = req.query.timeframe;
+
+            switch (timeframe) {
+                case 'weekly':
+                    startDate = new Date(now.setDate(now.getDate() - now.getDay()));
+                    break;
+                case 'monthly':
+                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                    break;
+                case 'yearly':
+                    startDate = new Date(now.getFullYear(), 0, 1);
+                    break;
+                default:
+                    return responseStatus(res, 400, 'Invalid timeframe. Please use "weekly", "monthly", or "yearly".', null);
+            }
+
+            const newUsers = await this.userRepository.countNewUsersByDateRange(startDate, new Date());
+
+            const totalUsersAtStart = totalUsers - newUsers;
+
+            const growthPercentage = totalUsersAtStart > 0 ? (newUsers / totalUsersAtStart) * 100 : 0;
+            const stats = {
+                totalUsers,
+                newUsers,
+                growthPercentage,
+                timeframe,
+            };
+
+            return responseStatus(res, 200, 'User stats fetched successfully', stats);
+        } catch (error) {
+            console.error('Error fetching user statistics:', error);
+            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+        }
     };
 
-    //     getBusinessStats = async (req: Request, res: Response) => {
-    //         try {
-    //             const totalUsers = await this.userRepository.countTotalUsers();
+    // task services 
+    createTask = async (req: Request & { user: any }, res: Response) => {
+        try {
+            const _id = req.user?.payload?.userId;
+            const taskData: TaskModel = req.body;
+            const newTask = await this.taskRepository.save({ ...taskData, businessId: _id });
+            if (!newTask) {
+                return responseStatus(res, 500, msg.task.saveError, null);
+            }
+            return responseStatus(res, 200, msg.task.createdSuccess, newTask);
+        } catch (error) {
+            console.error(error);
+            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+        }
+    };
 
-    //             const now = new Date();
-    //             let startDate: Date;
-
-    //             const timeframe = req.query.timeframe;
-
-    //             switch (timeframe) {
-    //                 case 'weekly':
-    //                     startDate = new Date(now.setDate(now.getDate() - now.getDay()));
-    //                     break;
-    //                 case 'monthly':
-    //                     startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-    //                     break;
-    //                 case 'yearly':
-    //                     startDate = new Date(now.getFullYear(), 0, 1);
-    //                     break;
-    //                 default:
-    //                     return responseStatus(res, 400, 'Invalid timeframe. Please use "weekly", "monthly", or "yearly".', null);
-    //             }
-
-    //             const newUsers = await this.userRepository.countNewUsersByDateRange(startDate, new Date());
-
-    //             const totalUsersAtStart = totalUsers - newUsers;
-
-    //             const growthPercentage = totalUsersAtStart > 0 ? (newUsers / totalUsersAtStart) * 100 : 0;
-    //             const stats = {
-    //                 totalUsers,
-    //                 newUsers,
-    //                 growthPercentage,
-    //                 timeframe,
-    //             };
-
-    //             return responseStatus(res, 200, 'User stats fetched successfully', stats);
-    //         } catch (error) {
-    //             console.error('Error fetching user statistics:', error);
-    //             return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
-    //         }
-    //     };
-
-    //     // task services 
-    //     createTask = async (req: Request & { user: any }, res: Response) => {
-    //         try {
-    //             const _id = req.user?.payload?.userId;
-    //             const taskData: TaskModel = req.body;
-    //             const newTask = await this.taskRepository.save({ ...taskData, businessId: _id });
-    //             if (!newTask) {
-    //                 return responseStatus(res, 500, msg.task.saveError, null);
-    //             }
-    //             return responseStatus(res, 200, msg.task.createdSuccess, newTask);
-    //         } catch (error) {
-    //             console.error(error);
-    //             return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
-    //         }
-    //     };
-
-    //     getAllTasks = async (req: Request & { user: any }, res: Response) => {
-    //         try {
-    //             const _id = req.user?.payload?.userId;
-    //             const tasks = await this.taskRepository.findAll({ businessId: _id });
-    //             if (!tasks.length) {
-    //                 return responseStatus(res, 200, msg.task.fetchedSuccess, 'No tasks to show ');
-    //             }
-    //             return responseStatus(res, 200, msg.task.fetchedSuccess, tasks);
+    getAllTasks = async (req: Request & { user: any }, res: Response) => {
+        try {
+            const _id = req.user?.payload?.userId;
+            const tasks = await this.taskRepository.findAll({ businessId: _id });
+            if (!tasks.length) {
+                return responseStatus(res, 200, msg.task.fetchedSuccess, 'No tasks to show ');
+            }
+            return responseStatus(res, 200, msg.task.fetchedSuccess, tasks);
 
 
-    //         } catch (error) {
-    //             console.error('Error fetching user statistics:', error);
-    //             return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
-    //         }
+        } catch (error) {
+            console.error('Error fetching user statistics:', error);
+            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+        }
 
-    //     };
+    };
 
-    //     getTaskStatistics = async (req: Request & { user: any }, res: Response) => {
-    //         const _id = req.user?.payload?.userId;
-    //         try {
-    //             const now = new Date();
-    //             let startDate: Date;
+    getTaskStatistics = async (req: Request & { user: any }, res: Response) => {
+        const _id = req.user?.payload?.userId;
+        try {
+            const now = new Date();
+            let startDate: Date;
 
-    //             const timeframe = req.query.timeframe as string;
+            const timeframe = req.query.timeframe as string;
 
-    //             switch (timeframe) {
-    //                 case 'weekly':
-    //                     startDate = new Date(now.setDate(now.getDate() - now.getDay()));
-    //                     break;
-    //                 case 'monthly':
-    //                     startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-    //                     break;
-    //                 case 'yearly':
-    //                     startDate = new Date(now.getFullYear(), 0, 1);
-    //                     break;
-    //                 default:
-    //                     return res.status(400).json({
-    //                         statusMessage: 'Error',
-    //                         status: 400,
-    //                         success: false,
-    //                         message: 'Invalid timeframe. Please use "weekly", "monthly", or "yearly".',
-    //                     });
-    //             }
-
-
-    //             const tasks = await TaskSchema.find({
-    //                 startDate: { $gte: startDate },
-    //                 businessId: _id,
-    //                 status: { $in: ['ONGOING', 'COMPLETED'] },
-    //             });
-
-    //             // Calculate statistics
-    //             let ongoingCount = 0;
-    //             let completedCount = 0;
-
-    //             tasks.forEach(task => {
-    //                 if (task.status === 'ONGOING') {
-    //                     ongoingCount++;
-    //                 } else if (task.status === 'COMPLETED') {
-    //                     completedCount++;
-    //                 }
-    //             });
+            switch (timeframe) {
+                case 'weekly':
+                    startDate = new Date(now.setDate(now.getDate() - now.getDay()));
+                    break;
+                case 'monthly':
+                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                    break;
+                case 'yearly':
+                    startDate = new Date(now.getFullYear(), 0, 1);
+                    break;
+                default:
+                    return res.status(400).json({
+                        statusMessage: 'Error',
+                        status: 400,
+                        success: false,
+                        message: 'Invalid timeframe. Please use "weekly", "monthly", or "yearly".',
+                    });
+            }
 
 
-    //             const response = {
-    //                 timeframe,
-    //                 statistics: {
-    //                     ongoing: ongoingCount,
-    //                     completed: completedCount,
-    //                 },
-    //             };
+            const tasks = await TaskSchema.find({
+                startDate: { $gte: startDate },
+                businessId: _id,
+                status: { $in: ['ONGOING', 'COMPLETED'] },
+            });
 
-    //             return res.status(200).json({
-    //                 statusMessage: 'Success',
-    //                 status: 200,
-    //                 success: true,
-    //                 message: 'Task statistics fetched successfully',
-    //                 data: response,
-    //             });
-    //         } catch (error) {
-    //             console.error('Error fetching task statistics:', error);
-    //             return res.status(500).json({
-    //                 statusMessage: 'Error',
-    //                 status: 500,
-    //                 success: false,
-    //                 message: 'An unknown error occurred',
-    //             });
-    //         }
-    //     };
+            // Calculate statistics
+            let ongoingCount = 0;
+            let completedCount = 0;
 
-    //     updateTaskStatus = async (req: Request & { user: any }, res: Response) => {
-    //         try {
-    //             const taskId = req.params?.id
+            tasks.forEach(task => {
+                if (task.status === 'ONGOING') {
+                    ongoingCount++;
+                } else if (task.status === 'COMPLETED') {
+                    completedCount++;
+                }
+            });
 
 
-    //             if (!taskId) {
-    //                 return responseStatus(res, 400, msg.common.invalidRequest, null);
-    //             }
-    //             const updatedTask = await this.taskRepository.updateById(taskId, req.body)
-    //             if (!updatedTask) {
-    //                 return responseStatus(res, 404, msg.task.notFound, null);
-    //             }
+            const response = {
+                timeframe,
+                statistics: {
+                    ongoing: ongoingCount,
+                    completed: completedCount,
+                },
+            };
 
-    //             return responseStatus(res, 200, 'status updated successfully', updatedTask);
+            return res.status(200).json({
+                statusMessage: 'Success',
+                status: 200,
+                success: true,
+                message: 'Task statistics fetched successfully',
+                data: response,
+            });
+        } catch (error) {
+            console.error('Error fetching task statistics:', error);
+            return res.status(500).json({
+                statusMessage: 'Error',
+                status: 500,
+                success: false,
+                message: 'An unknown error occurred',
+            });
+        }
+    };
 
-    //         } catch (error) {
-    //             console.error("Error updating task status:", error);
-    //             return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
-    //         }
+    updateTaskStatus = async (req: Request & { user: any }, res: Response) => {
+        try {
+            const taskId = req.params?.id
 
-    //     }
+
+            if (!taskId) {
+                return responseStatus(res, 400, msg.common.invalidRequest, null);
+            }
+            const updatedTask = await this.taskRepository.updateById(taskId, req.body)
+            if (!updatedTask) {
+                return responseStatus(res, 404, msg.task.notFound, null);
+            }
+
+            return responseStatus(res, 200, 'status updated successfully', updatedTask);
+
+        } catch (error) {
+            console.error("Error updating task status:", error);
+            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+        }
+
+    }
 }

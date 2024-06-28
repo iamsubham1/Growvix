@@ -72,15 +72,15 @@ export class AdminController {
         }
     };
 
-    // updatePassword = async (req: Request & { user: any }, res: Response) => {
-    //     try {
+    updatePassword = async (req: Request & { user: any }, res: Response) => {
+        try {
 
-    //         return await this.adminService.updatePassword(req, res);
+            return await this.adminService.updatePassword(req, res);
 
-    //     } catch (error) {
-    //         return responseStatus(res, 500, msg.common.somethingWentWrong, error);
-    //     }
-    // };
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+        }
+    };
 
     getAllEmployee = async (req: Request, res: Response) => {
         try {
@@ -106,13 +106,13 @@ export class AdminController {
         }
     };
 
-    // updateMultipleEmployeeStatus = async (req: Request & { user: any }, res: Response) => {
-    //     try {
-    //         return await this.adminService.updateMultipleStatus(req, res);
-    //     } catch (error) {
-    //         return responseStatus(res, 500, msg.common.somethingWentWrong, error);
-    //     }
-    // };
+    updateMultipleEmployeeStatus = async (req: Request & { user: any }, res: Response) => {
+        try {
+            return await this.adminService.updateMultipleStatus(req, res);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+        }
+    };
 
     assignBusiness = async (req: Request & { user: any }, res: Response) => {
         try {

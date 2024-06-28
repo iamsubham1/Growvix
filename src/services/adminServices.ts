@@ -8,7 +8,7 @@ import { jwtSignIN } from '../configuration/config';
 import * as dotenv from 'dotenv';
 dotenv.config();
 import { MainRepository } from '../repository/mainRepository';
-import { AdminModel, UserModel, UserSchema } from '../models/userModel';
+import { UserModel, UserSchema } from '../models/userModel';
 import { userObjectCleanUp } from '../helper/utils';
 import sendEmailWithPassword from '../helper/sendMail';
 import uploadImage from '../helper/uploadImage';
@@ -48,6 +48,7 @@ export class AdminService {
                 name: name,
                 email: email,
                 password: hashedPassword,
+
                 isDeleted: false,
                 status: 'Active',
                 admin: {
@@ -183,49 +184,49 @@ export class AdminService {
         }
     };
 
+    updatePassword = async (req: Request & { user: any }, res: Response) => {
+        try {
+            const _id = req.user?.payload?.userId;
+            const { oldPassword, newPassword } = req.body;
 
+            const user = await this.adminRepository.findById(_id);
 
-    // updatePassword = async (req: Request & { user: any }, res: Response) => {
-    //     try {
-    //         const _id = req.user?.payload?.userId;
-    //         const { oldPassword, newPassword } = req.body;
+            if (!user) {
+                return responseStatus(res, 404, msg.user.userNotFound, null);
+            }
 
-    //         const user = await this.adminRepository.findById(_id);
+            const passwordMatch = await argon2.verify(user.password, oldPassword);
 
-    //         if (!user) {
-    //             return responseStatus(res, 404, msg.user.userNotFound, null);
-    //         }
+            if (!passwordMatch) {
+                return responseStatus(res, 401, msg.user.oldPasswordError, null);
+            }
 
-    //         const passwordMatch = await argon2.verify(user.password, oldPassword);
+            const hashedNewPassword = await argon2.hash(newPassword);
 
-    //         if (!passwordMatch) {
-    //             return responseStatus(res, 401, msg.user.oldPasswordError, null);
-    //         }
+            const updateData = { password: hashedNewPassword };
+            const updatedUser = await this.adminRepository.updateById(_id, updateData);
 
-    //         const hashedNewPassword = await argon2.hash(newPassword);
+            if (!updatedUser) {
+                return responseStatus(res, 500, msg.user.userNotFound, null);
+            }
 
-    //         user.password = hashedNewPassword;
-    //         const updateData = { password: hashedNewPassword };
-    //         const updatedUser = await this.adminRepository.updateById(_id, updateData);
-
-    //         if (!updatedUser) {
-    //             return responseStatus(res, 500, msg.user.userNotFound, null);
-    //         }
-
-    //         return responseStatus(res, 200, msg.user.PasswordChangeSuccessfully, null);
-    //     } catch (error) {
-    //         return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
-    //     }
-    // };
+            return responseStatus(res, 200, msg.user.PasswordChangeSuccessfully, null);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+        }
+    };
 
     getAllEmployees = async (req: Request, res: Response) => {
 
         try {
-            const employees = await this.adminRepository.findAll(
-                { 'admin.role': 'EMPLOYEE', isDeleted: false },
+            const employees = await this.adminRepository.findAllWithPopulate(
+                { 'admin.role': 'EMPLOYEE', isDeleted: false }, [{
+                    path: 'admin.businessList',
+                    select: 'name businessName subscription createdAt picture'
+                }]
 
             );
-            console.log(employees);
+
             if (!employees.length) {
                 return responseStatus(res, 200, msg.user.fetchedSuccessfully, "No Employee Exist");
             };
@@ -244,22 +245,27 @@ export class AdminService {
             console.error('Error fetching employees:', error);
             return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
         }
-    };//tested works
+    };//tested works(populated businessList)
 
     getEmployeeById = async (req: Request, res: Response) => {
         const employeeId = req.params.id;
         try {
-            const employee = await this.adminRepository.findOne({ _id: employeeId, isDeleted: false, 'admin.role': 'EMPLOYEE' });
+            const employee = await this.adminRepository.findWithPopulate({ _id: employeeId, isDeleted: false, 'admin.role': 'EMPLOYEE' }, [{
+                path: 'admin.businessList',
+                select: 'name businessName subscription createdAt picture'
+            }]);
+
+
             if (!employee) {
                 return responseStatus(res, 404, 'Employee not found', employee);
-            }
+            };
             employee.password = null;
             return responseStatus(res, 200, 'Employee fetched successfully', employee);
         } catch (error) {
             console.error('Error fetching employee:', error);
             return responseStatus(res, 500, 'Something went wrong', 'An unknown error occurred');
         }
-    };//tested works
+    };//tested works(populated businessList)
 
     assignBusinessToEmployee = async (req: Request, res: Response) => {
         try {
@@ -408,7 +414,7 @@ export class AdminService {
             console.error('Error fetching business assigned to employee:', error);
             return responseStatus(res, 500, msg.user.fetchFailed, 'An unknown error occurred');
         }
-    };//tested works
+    };//tested works(populated)
 
 
 }

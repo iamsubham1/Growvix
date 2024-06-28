@@ -37,7 +37,8 @@ export const CreatorValidation: Joi.ObjectSchema = Joi.object().keys({
     address: Joi.object(),
     creatorType: Joi.string().min(3),
     isDeleted: Joi.boolean(),
-    status: Joi.string().min(5)
+    status: Joi.string().min(5),
+    skills: Joi.array().items(Joi.string())
 });
 
 

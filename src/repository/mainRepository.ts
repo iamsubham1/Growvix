@@ -6,6 +6,13 @@ interface PopulateOptions {
     path: string;
     select?: string;
     populate?: PopulateOptions;
+};
+
+
+interface PopulateOptionArray {
+    path: string;
+    select?: string;
+    populate?: PopulateOptions[];
 }
 
 @Service()
@@ -19,9 +26,7 @@ export class MainRepository {
         return new UserSchema(user).save();
     }
 
-
     async updateById(_id: string, updateData: Partial<UserModel>): Promise<UserModel | null> {
-        console.log(updateData);
         return UserSchema.findOneAndUpdate({ _id: _id }, updateData, {
             new: true,
         }).exec();
@@ -70,6 +75,7 @@ export class MainRepository {
             return null;
         }
     }
+
     async findOne<Query>(query: Query): Promise<UserModel> {
         return UserSchema.findOne(query).exec();
     }
@@ -115,4 +121,52 @@ export class MainRepository {
         }
     }
 
+    async findAllWithPopulate<Query>(query: Query, populate?: PopulateOptionArray[]): Promise<any | null> {
+        try {
+            let queryExec = UserSchema.find(query);
+
+            if (populate && populate.length > 0) {
+                populate.forEach((pop) => {
+                    queryExec = queryExec.populate(pop);
+                });
+            }
+
+            const result = await queryExec.exec();
+            return result;
+        } catch (error) {
+            console.error('Error in findWithPopulate:', error);
+            throw error;
+        }
+    }
+
+    async countTotalUsers(): Promise<number> {
+        return UserSchema.countDocuments({ isDeleted: false, type: 'Business' }).exec();
+    }
+
+    async countNewUsersByDateRange(startDate: Date, endDate: Date): Promise<number> {
+        return UserSchema.countDocuments({
+            isDeleted: false,
+            type: 'Business',
+            createdAt: { $gte: startDate, $lte: endDate }
+        }).exec();
+    }
+
+    async updateStatusById(_id: string, status: string): Promise<UserModel | null> {
+        return await UserSchema.findOneAndUpdate({ _id: _id }, { status: status }, {
+            new: true,
+        }).exec();
+    }
+
+
+    async countTotalCreators(): Promise<number> {
+        return UserSchema.countDocuments({ isDeleted: false, type: 'Creator' }).exec();
+    }
+
+    async countNewCreatorsByDateRange(startDate: Date, endDate: Date): Promise<number> {
+        return UserSchema.countDocuments({
+            isDeleted: false,
+            type: 'Creator',
+            createdAt: { $gte: startDate, $lte: endDate }
+        }).exec();
+    }
 }
