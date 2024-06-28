@@ -10,9 +10,6 @@ import { SubscriptionPlanModel, } from '../models/subscriptionModel';
 import { BillingTypeSchema } from '../models/billingTypeModel';
 import { PlanSchema } from '../models/plansModel';
 import { UserSchema } from '../models/userModel';
-import { UserRepository } from '../repository/userRepository';
-import mongoose from 'mongoose';
-import * as jwt from 'jsonwebtoken';
 dotenv.config();
 
 const key_id = process.env.RAZERPAY_KEY_ID!;
@@ -25,7 +22,7 @@ const razorpayInstance = new Razorpay({
 
 @Service()
 export class RazorpayService {
-    constructor(@Inject() private userRepository: UserRepository) { }
+    constructor() { }
 
     async createOrder(req: Request, res: Response) {
         const receiptId = uuidv4();
@@ -103,8 +100,6 @@ export class RazorpayService {
 
                 try {
                     const savedSubscription = await newSubscription.save();
-
-
                     console.log(savedSubscription._id, "savedSubscription._id")
                     await UserSchema.findByIdAndUpdate(userId, { subscription: savedSubscription._id });
 

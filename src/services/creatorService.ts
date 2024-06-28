@@ -10,20 +10,18 @@ import sendEmailWithPassword from '../helper/sendMail';
 import uploadImage from '../helper/uploadImage';
 import { userObjectCleanUp } from '../helper/utils';
 import { MainRepository } from '../repository/mainRepository';
-
 import { UserModel, UserSchema } from '../models/userModel';
 
 dotenv.config();
 
 @Service()
 export class CreatorService {
-    constructor(@Inject() private creatorRepository: MainRepository) { }
+    constructor(@Inject() private mainRepository: MainRepository) { }
 
     private generatePassword(): string {
         const randomNumber = Math.floor(Math.random() * 10000);
         return `GrowVix@${randomNumber}`;
     }
-
 
     save = async (req: Request, res: Response) => {
         try {
@@ -34,13 +32,13 @@ export class CreatorService {
                 return responseStatus(res, 400, 'Name and email are required', null);
             }
 
-            const existingCreator = await this.creatorRepository.findByEmail({ email: email });
+            const existingCreator = await this.mainRepository.findByEmail({ email: email });
             if (existingCreator) {
                 return responseStatus(res, 400, msg.user.userEmailExist, null);
             }
 
             if (phoneNumber) {
-                const existingUserByPhoneNumber = await this.creatorRepository.findByPhoneNumber(phoneNumber.toString());
+                const existingUserByPhoneNumber = await this.mainRepository.findByPhoneNumber(phoneNumber.toString());
                 if (existingUserByPhoneNumber) {
                     return responseStatus(res, 400, msg.user.userPhoneNumberExist, null);
                 }
@@ -67,7 +65,7 @@ export class CreatorService {
 
 
             // Save creator to database
-            const newCreator = await this.creatorRepository.save(newUser);
+            const newCreator = await this.mainRepository.save(newUser);
             if (!newCreator) {
                 return responseStatus(res, 500, msg.user.errorInSaving, null);
             }
@@ -93,12 +91,12 @@ export class CreatorService {
         try {
             const { emailOrPhoneNumber, password }: { emailOrPhoneNumber: string; password: string } = req.body;
 
-            let user = await this.creatorRepository.findByEmail({ email: emailOrPhoneNumber });
+            let user = await this.mainRepository.findByEmail({ email: emailOrPhoneNumber });
 
             if (!user) {
                 const isPhoneNumber = /^\d+$/.test(emailOrPhoneNumber);
                 if (isPhoneNumber) {
-                    user = await this.creatorRepository.findByPhoneNumber(emailOrPhoneNumber);
+                    user = await this.mainRepository.findByPhoneNumber(emailOrPhoneNumber);
                 } else {
                     return responseStatus(res, 400, msg.user.userNotFound, null);
                 }
@@ -133,12 +131,12 @@ export class CreatorService {
             }
             const updateData = req.body;
             if (updateData.phoneNumber) {
-                const existingUserByPhoneNumber = await this.creatorRepository.findByPhoneNumber(updateData.phoneNumber.toString());
+                const existingUserByPhoneNumber = await this.mainRepository.findByPhoneNumber(updateData.phoneNumber.toString());
                 if (existingUserByPhoneNumber && existingUserByPhoneNumber._id.toString() !== _id) {
                     return responseStatus(res, 400, msg.user.userPhoneNumberExist, null);
                 }
             }
-            const updatedUser = await this.creatorRepository.updateById(_id, updateData);
+            const updatedUser = await this.mainRepository.updateById(_id, updateData);
             if (!updatedUser) {
                 return responseStatus(res, 404, msg.user.userNotFound, null);
             }
@@ -154,7 +152,7 @@ export class CreatorService {
             const { page = 1, limit = 10 } = req.query;
             const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
 
-            const allCreators = await this.creatorRepository.findAll({ isDeleted: false, type: 'Creator' }, skip, parseInt(limit as string));
+            const allCreators = await this.mainRepository.findAll({ isDeleted: false, type: 'Creator' }, skip, parseInt(limit as string));
             if (!allCreators.length) {
                 return responseStatus(res, 200, msg.user.fetchedSuccessfully, "No Creators Exist");
             }
@@ -169,7 +167,7 @@ export class CreatorService {
         try {
             const creatorId = req.params.id;
 
-            const creator = await this.creatorRepository.findById(creatorId);
+            const creator = await this.mainRepository.findById(creatorId);
             if (creator && creator.isDeleted === false) {
                 return responseStatus(res, 200, msg.user.userFound, creator);
             }
@@ -188,7 +186,7 @@ export class CreatorService {
             }
             const { status } = req.body;
 
-            const updatedCreator = await this.creatorRepository.updateById(_id, { status });
+            const updatedCreator = await this.mainRepository.updateById(_id, { status });
             if (!updatedCreator) {
                 return responseStatus(res, 404, msg.user.userNotFound, null);
             }
@@ -211,7 +209,7 @@ export class CreatorService {
             }
             const updatedCreatorss = await Promise.all(
                 ids.map(async (_id) => {
-                    const updatedUser = await this.creatorRepository.updateById(_id, { status });
+                    const updatedUser = await this.mainRepository.updateById(_id, { status });
                     return updatedUser;
                 })
             );
@@ -235,7 +233,7 @@ export class CreatorService {
                 return responseStatus(res, 400, msg.common.invalidRequest, null);
             }
 
-            const updatedCreator = await this.creatorRepository.updateById(userId, { isDeleted: true });
+            const updatedCreator = await this.mainRepository.updateById(userId, { isDeleted: true });
             if (!updatedCreator) {
                 return responseStatus(res, 404, msg.user.userNotFound, null);
             }
@@ -247,41 +245,41 @@ export class CreatorService {
         }
     };
 
-    // uploadUserProfileImage = async (req: Request & { user: any }, res: Response) => {
-    //     try {
+    uploadCreatorProfileImage = async (req: Request & { user: any }, res: Response) => {
+        try {
 
-    //         const userId = req.params?.id || req.user?.payload?.userId;
+            const userId = req.params?.id || req.user?.payload?.userId;
 
-    //         if (!userId) {
-    //             return responseStatus(res, 400, msg.common.invalidRequest, null);
-    //         }
 
-    //         const secure_url = await uploadImage(req, res);
+            if (!userId) {
+                return responseStatus(res, 400, msg.common.invalidRequest, null);
+            }
 
-    //         if (secure_url) {
-    //             const updateData = { avatar: secure_url };
-    //             const updatedUser = await this.creatorRepository.updateById(userId, updateData);
-    //             return responseStatus(res, 200, 'Uploaded successfully', updatedUser);
-    //         } else {
-    //             return responseStatus(res, 500, msg.common.somethingWentWrong, 'Failed to upload image');
-    //         }
+            const secure_url = await uploadImage(req, res);
 
-    //     } catch (error) {
-    //         if (error.statusCode) {
-    //             return responseStatus(res, error.statusCode, error.message, null);
-    //         }
-    //         console.error('Error uploading profile image:', error);
-    //         return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
-    //     }
-    // };
+            if (secure_url) {
+                const updateData = { picture: secure_url };
+                const updatedUser = await this.mainRepository.updateById(userId, updateData);
+                return responseStatus(res, 200, 'Uploaded successfully', updatedUser);
+            } else {
+                return responseStatus(res, 500, msg.common.somethingWentWrong, 'Failed to upload image');
+            }
 
+        } catch (error) {
+            if (error.statusCode) {
+                return responseStatus(res, error.statusCode, error.message, null);
+            }
+            console.error('Error uploading profile image:', error);
+            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+        }
+    };
 
     updatePassword = async (req: Request & { user: any }, res: Response) => {
         try {
             const _id = req.user?.payload?.userId;
             const { oldPassword, newPassword } = req.body;
 
-            const user = await this.creatorRepository.findById(_id);
+            const user = await this.mainRepository.findById(_id);
 
             if (!user) {
                 return responseStatus(res, 404, msg.user.userNotFound, null);
@@ -297,7 +295,7 @@ export class CreatorService {
 
             user.password = hashedNewPassword;
             const updateData = { password: hashedNewPassword };
-            const updatedUser = await this.creatorRepository.updateById(_id, updateData);
+            const updatedUser = await this.mainRepository.updateById(_id, updateData);
 
             if (!updatedUser) {
                 return responseStatus(res, 500, msg.user.userNotFound, null);
@@ -313,7 +311,7 @@ export class CreatorService {
         try {
             const keyword = req.params.keyword;
             const regex = new RegExp(keyword, 'i');
-            const results = await this.creatorRepository.findAll({ name: { $regex: regex }, isDeleted: false });
+            const results = await this.mainRepository.findAll({ name: { $regex: regex }, isDeleted: false });
 
             if (!results.length) {
                 return responseStatus(res, 404, msg.user.userNotExist, null);
@@ -328,7 +326,7 @@ export class CreatorService {
 
     getCreatorStats = async (req: Request, res: Response) => {
         try {
-            const totalCreators = await this.creatorRepository.countTotalCreators();
+            const totalCreators = await this.mainRepository.countTotalCreators();
 
             const now = new Date();
             let startDate: Date;
@@ -349,7 +347,7 @@ export class CreatorService {
                     return responseStatus(res, 400, 'Invalid timeframe. Please use "weekly", "monthly", or "yearly".', null);
             }
 
-            const newCreators = await this.creatorRepository.countNewCreatorsByDateRange(startDate, new Date());
+            const newCreators = await this.mainRepository.countNewCreatorsByDateRange(startDate, new Date());
 
 
             const totalCreatorsAtStart = totalCreators - newCreators;

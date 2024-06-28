@@ -18,7 +18,7 @@ dotenv.config();
 @Service()
 export class UserService {
     constructor(@Inject()
-    private userRepository: MainRepository,
+    private mainRepository: MainRepository,
         private taskRepository: TaskRepository
     ) { }
 
@@ -30,20 +30,19 @@ export class UserService {
     save = async (req: Request, res: Response) => {
         try {
             const user = req.body;
-            console.log(user);
 
             if (!user.name || !user.email || !user.phoneNumber) {
                 return responseStatus(res, 400, 'Name, email are required fields.', null);
             }
 
             if (user.email) {
-                const existingUserByEmail = await this.userRepository.findByEmail({ 'email': user.email });
+                const existingUserByEmail = await this.mainRepository.findByEmail({ 'email': user.email });
                 if (existingUserByEmail) {
                     return responseStatus(res, 400, msg.user.userEmailExist, null);
                 }
             }
             if (user.phoneNumber) {
-                const existingUserByPhoneNumber = await this.userRepository.findByPhoneNumber(user.phoneNumber.toString());
+                const existingUserByPhoneNumber = await this.mainRepository.findByPhoneNumber(user.phoneNumber.toString());
 
                 if (existingUserByPhoneNumber) {
                     return responseStatus(res, 400, msg.user.userPhoneNumberExist, null);
@@ -68,12 +67,12 @@ export class UserService {
                 }
             });
 
-            const savedUser = await this.userRepository.save(newUser);
+            const savedUser = await this.mainRepository.save(newUser);
 
 
             if (!savedUser) {
                 return responseStatus(res, 500, msg.user.errorInSaving, null);
-            }
+            };
             // Send email with the auto-generated password
             await sendEmailWithPassword(savedUser.email, generatedPassword);
 
@@ -93,12 +92,12 @@ export class UserService {
         try {
             const { emailOrPhoneNumber, password }: { emailOrPhoneNumber: string; password: string } = req.body;
 
-            let user = await this.userRepository.findByEmail({ email: emailOrPhoneNumber });
+            let user = await this.mainRepository.findByEmail({ email: emailOrPhoneNumber });
 
             if (!user) {
                 const isPhoneNumber = /^\d+$/.test(emailOrPhoneNumber);
                 if (isPhoneNumber) {
-                    user = await this.userRepository.findByPhoneNumber(emailOrPhoneNumber);
+                    user = await this.mainRepository.findByPhoneNumber(emailOrPhoneNumber);
                 } else {
                     return responseStatus(res, 400, msg.user.userNotFound, null);
                 }
@@ -135,12 +134,12 @@ export class UserService {
             const updateData = req.body;
             console.log(updateData);
             if (updateData.phoneNumber) {
-                const existingUserByPhoneNumber = await this.userRepository.findByPhoneNumber(updateData.phoneNumber.toString());
+                const existingUserByPhoneNumber = await this.mainRepository.findByPhoneNumber(updateData.phoneNumber.toString());
                 if (existingUserByPhoneNumber && existingUserByPhoneNumber._id.toString() !== _id) {
                     return responseStatus(res, 400, msg.user.userPhoneNumberExist, null);
                 }
             };
-            const updatedUser = await this.userRepository.updateById(_id, updateData);
+            const updatedUser = await this.mainRepository.updateById(_id, updateData);
             if (!updatedUser) {
                 return responseStatus(res, 404, msg.user.userNotFound, null);
             }
@@ -158,7 +157,7 @@ export class UserService {
             if (!_id) {
                 return responseStatus(res, 400, msg.common.invalidRequest, null);
             }
-            await this.userRepository.softDeleteById(_id);
+            await this.mainRepository.softDeleteById(_id);
             return responseStatus(res, 200, msg.user.userDeletedSuccess, {});
         } catch (error) {
             console.error(error);
@@ -172,7 +171,7 @@ export class UserService {
     //         if (!email) {
     //             return responseStatus(res, 400, msg.common.emptyBody, null);
     //         }
-    //         const user = await this.userRepository.findByEmail({ email, isDeleted: false, type: 'Business' });
+    //         const user = await this.mainRepository.findByEmail({ email, isDeleted: false, type: 'Business' });
     //         if (user && user.isDeleted == false) {
     //             return responseStatus(res, 200, msg.user.userEmailExist, true);
     //         }
@@ -187,7 +186,7 @@ export class UserService {
         try {
             const userId = req.params.id;
 
-            const user = await this.userRepository.findById(userId);
+            const user = await this.mainRepository.findById(userId);
             if (user.isDeleted == false && user.type == 'Business') {
                 return responseStatus(res, 200, msg.user.userFound, user);
             }
@@ -199,7 +198,7 @@ export class UserService {
     };
 
     async findOrCreateUser(profile: any): Promise<{ existingUser: boolean; user: UserModel | null; token: string | null }> {
-        let user = await this.userRepository.findByEmail(profile.email);
+        let user = await this.mainRepository.findByEmail(profile.email);
 
         if (!user) {
             user = new UserSchema({
@@ -214,7 +213,7 @@ export class UserService {
                 picture: profile?.picture,
             });
 
-            user = await this.userRepository.save(user);
+            user = await this.mainRepository.save(user);
 
             // Generate JWT token for the new user
             const token = jwt.sign({ userId: user._id }, jwtSignIN.secret);
@@ -232,7 +231,7 @@ export class UserService {
 
     getAllUsers = async (req: Request, res: Response) => {
         try {
-            const allUsers = await this.userRepository.findAll({ isDeleted: false, type: 'Business' });
+            const allUsers = await this.mainRepository.findAll({ isDeleted: false, type: 'Business' });
 
             if (!allUsers.length) {
                 return responseStatus(res, 200, msg.user.fetchedSuccessfully, "No Users Exist");
@@ -262,7 +261,7 @@ export class UserService {
                 return responseStatus(res, 400, msg.common.invalidRequest, null);
             }
 
-            const updatedUser = await this.userRepository.updateStatusById(_id, status);
+            const updatedUser = await this.mainRepository.updateStatusById(_id, status);
 
             if (!updatedUser) {
                 return responseStatus(res, 404, msg.user.userNotExist, null);
@@ -287,7 +286,7 @@ export class UserService {
 
             const updatedUsers = await Promise.all(
                 ids.map(async (_id) => {
-                    const updatedUser = await this.userRepository.updateStatusById(_id, status);
+                    const updatedUser = await this.mainRepository.updateStatusById(_id, status);
                     return updatedUser;
                 })
             );
@@ -303,7 +302,7 @@ export class UserService {
         }
     }
 
-    uploadUserProfileImage = async (req: Request & { user: any }, res: Response) => {
+    uploadBusinessProfileImage = async (req: Request & { user: any }, res: Response) => {
         try {
 
             const userId = req.params?.id || req.user?.payload?.userId;
@@ -317,7 +316,7 @@ export class UserService {
 
             if (secure_url) {
                 const updateData = { picture: secure_url };
-                const updatedUser = await this.userRepository.updateById(userId, updateData);
+                const updatedUser = await this.mainRepository.updateById(userId, updateData);
                 return responseStatus(res, 200, 'Uploaded successfully', updatedUser);
             } else {
                 return responseStatus(res, 500, msg.common.somethingWentWrong, 'Failed to upload image');
@@ -337,7 +336,7 @@ export class UserService {
             const _id = req.user?.payload?.userId;
             const { oldPassword, newPassword } = req.body;
 
-            const user = await this.userRepository.findById(_id);
+            const user = await this.mainRepository.findById(_id);
 
             if (!user) {
                 return responseStatus(res, 404, msg.user.userNotFound, null);
@@ -352,7 +351,7 @@ export class UserService {
             const hashedNewPassword = await argon2.hash(newPassword);
 
             const updateData = { password: hashedNewPassword };
-            const updatedUser = await this.userRepository.updateById(_id, updateData);
+            const updatedUser = await this.mainRepository.updateById(_id, updateData);
 
             if (!updatedUser) {
                 return responseStatus(res, 500, msg.user.userNotFound, null);
@@ -368,7 +367,7 @@ export class UserService {
         try {
             const keyword = req.params.keyword;
             const regex = new RegExp(keyword, 'i');
-            const results = await this.userRepository.findAllWithPopulate(
+            const results = await this.mainRepository.findAllWithPopulate(
                 { 'business.businessName': { $regex: regex } },
                 [
                     {
@@ -405,7 +404,7 @@ export class UserService {
 
     getBusinessStats = async (req: Request, res: Response) => {
         try {
-            const totalUsers = await this.userRepository.countTotalUsers();
+            const totalUsers = await this.mainRepository.countTotalUsers();
 
             const now = new Date();
             let startDate: Date;
@@ -426,7 +425,7 @@ export class UserService {
                     return responseStatus(res, 400, 'Invalid timeframe. Please use "weekly", "monthly", or "yearly".', null);
             }
 
-            const newUsers = await this.userRepository.countNewUsersByDateRange(startDate, new Date());
+            const newUsers = await this.mainRepository.countNewUsersByDateRange(startDate, new Date());
 
             const totalUsersAtStart = totalUsers - newUsers;
 

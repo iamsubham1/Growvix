@@ -65,38 +65,20 @@ router.route('/searchBusiness/:keyword').post([checkJWT, AdminRoleCheck], userCo
 router.route('/businessStats').get([checkJWT, AdminRoleCheck], userController.getBusinessStats);//new added tested works
 
 
-
-
-
-
-
-
-
 //employee Routes
 router.route('/uploadpic').post([checkJWT], adminController.uploadImg);
 router.route('/employeeDetails').get([checkJWT], adminController.employeeDetailsWithBusiness);//new added tested works
 
-
-
-
-
-
-
-
-
-
-
-
-// //creator Routes 
-// router.route('/deleteCreator/:id').patch([checkJWT, AdminRoleCheck], creatorController.delete);
-// router.route('/getCreator/:id').get([checkJWT, AdminRoleCheck], creatorController.getCreatorById);
-// router.route('/allCreators').get([checkJWT, AdminRoleCheck], creatorController.getAllCreators);
-// router.route('/addCreator').post([checkJWT, AdminRoleCheck], validate('body', CreatorValidation), creatorController.save);
-// router.route('/updateCreatorStatus/:id').patch([checkJWT, AdminRoleCheck], creatorController.updateCreatorStatus);
-// router.route('/updateCreatorStatus').patch([checkJWT, AdminRoleCheck], creatorController.updateMultipleCreatorStatus);//new added tested works
-// router.route('/uploadpic/creator/:id').post([checkJWT, AdminRoleCheck], creatorController.uploadImg);
-// router.route('/searchCreator/:keyword').post([checkJWT, AdminRoleCheck], creatorController.searchByName);//new added tested works
-// router.route('/creatorStats').get([checkJWT, AdminRoleCheck], creatorController.getCreatorStats);//new added tested works
+//creator Routes 
+router.route('/deleteCreator/:id').patch([checkJWT, AdminRoleCheck], creatorController.delete);
+router.route('/getCreator/:id').get([checkJWT, AdminRoleCheck], creatorController.getCreatorById);
+router.route('/allCreators').get([checkJWT, AdminRoleCheck], creatorController.getAllCreators);
+router.route('/addCreator').post([checkJWT, AdminRoleCheck], validate('body', CreatorValidation), creatorController.save);
+router.route('/updateCreatorStatus/:id').patch([checkJWT, AdminRoleCheck], creatorController.updateCreatorStatus);
+router.route('/updateCreatorStatus').patch([checkJWT, AdminRoleCheck], creatorController.updateMultipleCreatorStatus);//new added tested works
+router.route('/uploadpic/creator/:id').post([checkJWT, AdminRoleCheck], creatorController.uploadCreatorImg);
+router.route('/searchCreator/:keyword').post([checkJWT, AdminRoleCheck], creatorController.searchByName);//new added tested works
+router.route('/creatorStats').get([checkJWT, AdminRoleCheck], creatorController.getCreatorStats);//new added tested works
 
 
 

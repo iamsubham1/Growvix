@@ -2,7 +2,7 @@ import { UserModel, UserSchema, BusinessModel } from '../models/userModel';
 import { Service } from 'typedi';
 
 @Service()
-export class UserRepository {
+class UserRepository {
 
     async save(user: UserModel): Promise<UserModel | null> {
         const userData = new UserSchema(user);

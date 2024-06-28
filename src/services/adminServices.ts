@@ -15,7 +15,7 @@ import uploadImage from '../helper/uploadImage';
 
 @Service()
 export class AdminService {
-    constructor(@Inject() private adminRepository: MainRepository) { }
+    constructor(@Inject() private mainRepository: MainRepository) { }
 
     private generatePassword(): string {
         const randomNumber = Math.floor(Math.random() * 10000);
@@ -32,7 +32,7 @@ export class AdminService {
             }
 
             // Check if user with the same email exists
-            const existingUser = await this.adminRepository.findByEmail({ 'email': email });
+            const existingUser = await this.mainRepository.findByEmail({ 'email': email });
             if (existingUser) {
                 return responseStatus(res, 400, 'User with this email already exists.', null);
             }
@@ -59,7 +59,7 @@ export class AdminService {
             });
 
             // Save the new user
-            const savedUser = await this.adminRepository.save(newUser);
+            const savedUser = await this.mainRepository.save(newUser);
 
 
             // Check if user was saved successfully
@@ -87,7 +87,7 @@ export class AdminService {
     login = async (req: Request, res: Response) => {
         try {
             const { email, password }: UserModel = req.body;
-            const user = await this.adminRepository.findByEmail({ email: email });
+            const user = await this.mainRepository.findByEmail({ email: email });
             if (!user) {
                 return responseStatus(res, 401, msg.user.userNotFound, null);
             }
@@ -113,7 +113,7 @@ export class AdminService {
                 return responseStatus(res, 400, msg.common.invalidRequest, null);
             }
             const updateData = req.body;
-            const updatedUser = await this.adminRepository.updateById(_id, updateData);
+            const updatedUser = await this.mainRepository.updateById(_id, updateData);
             if (!updatedUser) {
                 return responseStatus(res, 404, msg.user.userNotFound, null);
             }
@@ -131,7 +131,7 @@ export class AdminService {
                 return responseStatus(res, 400, msg.common.invalidRequest, null);
             }
             const { status } = req.body;
-            const updatedUser = await this.adminRepository.updateById(_id, { status });
+            const updatedUser = await this.mainRepository.updateById(_id, { status });
             if (!updatedUser) {
                 return responseStatus(res, 404, msg.user.userNotFound, null);
             }
@@ -154,7 +154,7 @@ export class AdminService {
 
             const updatedUsers = await Promise.all(
                 ids.map(async (_id) => {
-                    const updatedUser = await this.adminRepository.updateById(_id, { status });
+                    const updatedUser = await this.mainRepository.updateById(_id, { status });
                     return updatedUser;
                 }),
             );
@@ -176,7 +176,7 @@ export class AdminService {
             if (!_id) {
                 return responseStatus(res, 400, msg.common.invalidRequest, null);
             }
-            await this.adminRepository.softDeleteById(_id);
+            await this.mainRepository.softDeleteById(_id);
             return responseStatus(res, 200, msg.user.userDeletedSuccess, {});
         } catch (error) {
             console.error(error);
@@ -189,7 +189,7 @@ export class AdminService {
             const _id = req.user?.payload?.userId;
             const { oldPassword, newPassword } = req.body;
 
-            const user = await this.adminRepository.findById(_id);
+            const user = await this.mainRepository.findById(_id);
 
             if (!user) {
                 return responseStatus(res, 404, msg.user.userNotFound, null);
@@ -204,7 +204,7 @@ export class AdminService {
             const hashedNewPassword = await argon2.hash(newPassword);
 
             const updateData = { password: hashedNewPassword };
-            const updatedUser = await this.adminRepository.updateById(_id, updateData);
+            const updatedUser = await this.mainRepository.updateById(_id, updateData);
 
             if (!updatedUser) {
                 return responseStatus(res, 500, msg.user.userNotFound, null);
@@ -219,7 +219,7 @@ export class AdminService {
     getAllEmployees = async (req: Request, res: Response) => {
 
         try {
-            const employees = await this.adminRepository.findAllWithPopulate(
+            const employees = await this.mainRepository.findAllWithPopulate(
                 { 'admin.role': 'EMPLOYEE', isDeleted: false }, [{
                     path: 'admin.businessList',
                     select: 'name businessName subscription createdAt picture'
@@ -250,7 +250,7 @@ export class AdminService {
     getEmployeeById = async (req: Request, res: Response) => {
         const employeeId = req.params.id;
         try {
-            const employee = await this.adminRepository.findWithPopulate({ _id: employeeId, isDeleted: false, 'admin.role': 'EMPLOYEE' }, [{
+            const employee = await this.mainRepository.findWithPopulate({ _id: employeeId, isDeleted: false, 'admin.role': 'EMPLOYEE' }, [{
                 path: 'admin.businessList',
                 select: 'name businessName subscription createdAt picture'
             }]);
@@ -276,7 +276,7 @@ export class AdminService {
             if (!employeeId || !businessId || !Array.isArray(businessId) || businessId.length < 1) {
                 return responseStatus(res, 400, 'Employee ID and at least one Business ID are required', null);
             }
-            const updatedEmployee = await this.adminRepository.addBusinessesToList(employeeId, businessId);
+            const updatedEmployee = await this.mainRepository.addBusinessesToList(employeeId, businessId);
 
             if (!updatedEmployee) {
                 return responseStatus(res, 404, 'Employee not found', null);
@@ -295,7 +295,7 @@ export class AdminService {
                 return responseStatus(res, 400, msg.user.userIdNotFound, null);
             }
 
-            const updatedUser = await this.adminRepository.updateById(_id, { isDeleted: true });
+            const updatedUser = await this.mainRepository.updateById(_id, { isDeleted: true });
             if (!updatedUser) {
                 return responseStatus(res, 404, msg.user.userNotFound, null);
             }
@@ -319,7 +319,7 @@ export class AdminService {
 
             if (secure_url) {
                 const updateData = { picture: secure_url };
-                const updatedUser = await this.adminRepository.updateById(userId, updateData);
+                const updatedUser = await this.mainRepository.updateById(userId, updateData);
                 console.log(updatedUser);
                 if (!updatedUser) {
                     return responseStatus(res, 500, 'uploaded but Failed to save in db', {});
@@ -346,7 +346,7 @@ export class AdminService {
                 return responseStatus(res, 400, msg.queryParams.queryParamNotFound, 'Keyword parameter is missing');
             }
             const regex = new RegExp(keyword, 'i');
-            const results = await this.adminRepository.findAll({ name: { $regex: regex }, 'admin.role': 'EMPLOYEE', isDeleted: false });
+            const results = await this.mainRepository.findAll({ name: { $regex: regex }, 'admin.role': 'EMPLOYEE', isDeleted: false });
 
             if (!results.length) {
                 return responseStatus(res, 404, msg.user.userNotExist, null);
@@ -367,7 +367,7 @@ export class AdminService {
                 return responseStatus(res, 400, msg.queryParams.queryParamNotFound, 'Keyword parameter is missing');
             }
             const regex = new RegExp(keyword, 'i');
-            const results = await this.adminRepository.findAll({ name: { $regex: regex }, isDeleted: false });
+            const results = await this.mainRepository.findAll({ name: { $regex: regex }, isDeleted: false });
 
             if (!results.length) {
                 return responseStatus(res, 404, msg.user.userNotExist, null);
@@ -388,7 +388,7 @@ export class AdminService {
                 return responseStatus(res, 404, msg.user.userIdNotFound, null);
             }
 
-            const employee = await this.adminRepository.findWithPopulate({ _id: _id, isDeleted: false }, [
+            const employee = await this.mainRepository.findWithPopulate({ _id: _id, isDeleted: false }, [
                 {
                     path: 'admin.businessList',
                     select: 'name businessName subscription createdAt picture',

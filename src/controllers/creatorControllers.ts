@@ -74,13 +74,13 @@ export class CreatorController {
         }
     };
 
-    // uploadImg = async (req: Request & { user: any }, res: Response) => {
-    //     try {
-    //         await this.creatorService.uploadUserProfileImage(req, res);
-    //     } catch (error) {
-    //         return responseStatus(res, 500, msg.common.somethingWentWrong, error);
-    //     }
-    // };
+    uploadCreatorImg = async (req: Request & { user: any }, res: Response) => {
+        try {
+            await this.creatorService.uploadCreatorProfileImage(req, res);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+        }
+    };
 
 
     updatePassword = async (req: Request & { user: any }, res: Response) => {

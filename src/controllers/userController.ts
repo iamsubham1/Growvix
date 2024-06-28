@@ -89,11 +89,11 @@ export class UserController {
             return responseStatus(res, 500, msg.common.somethingWentWrong, error);
         }
     };
-    // // Image Upload
+    // Image Upload
 
     uploadImg = async (req: Request & { user: any }, res: Response) => {
         try {
-            const result = await this.userService.uploadUserProfileImage(req, res);
+            const result = await this.userService.uploadBusinessProfileImage(req, res);
             return result;
         } catch (error) {
             console.error('Error uploading profile image:', error);
