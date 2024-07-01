@@ -1,20 +1,13 @@
 import * as express from 'express';
 import { Container } from 'typedi';
-import { AdminController } from '../controllers/adminControllers';
+import { ResetPasswordController } from '../controllers/resetPasswordController';
 
-
-import * as dotenv from 'dotenv';
-import { checkJWT } from '../middleware/auth.middleware';
-
-dotenv.config();
 
 const router = express.Router();
-const adminController = Container.get(AdminController);
+const resetPasswordController = Container.get(ResetPasswordController);
 
 
-
-// Routes for Business CRUD
-router.route('/reset').post(adminController.resetPasswordLinkAndOtp);
-router.route('/verifyOtp').post(adminController.verifyOtp);
+router.route('/reset').post(resetPasswordController.resetPasswordLinkAndOtp);
+router.route('/verifyOtp').post(resetPasswordController.verifyOtp);
 
 export { router as ResetPasswordRoutes };

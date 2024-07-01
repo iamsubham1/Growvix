@@ -79,7 +79,7 @@ export class CreatorService {
             const token = jwt.sign({ creatorId: newCreator._id }, jwtSignIN.secret);
             return responseStatus(res, 200, msg.user.userSavedSuccess, {
                 token: token,
-                creator: newCreator,
+                "Creator Details": newCreator,
             });
         } catch (error) {
             console.error(error);
@@ -90,6 +90,9 @@ export class CreatorService {
     login = async (req: Request, res: Response) => {
         try {
             const { emailOrPhoneNumber, password }: { emailOrPhoneNumber: string; password: string } = req.body;
+            if (!emailOrPhoneNumber || !password) {
+                return responseStatus(res, 400, 'Name/phone number and password are required', null);
+            };
 
             let user = await this.mainRepository.findByEmail({ email: emailOrPhoneNumber });
 

@@ -22,7 +22,7 @@ router.route('/register').post(validate('body', RegisterEmailPassValidate), admi
 router.route('/login').post(validate('body', EmailPassValidate), adminController.loginAdmin);
 router.route('/update').patch([checkJWT], adminController.updateAdmin);
 router.route('/delete').delete([checkJWT], adminController.delete);
-router.route('/updatePassword').patch(validate('body', UpdatePassValidate), [checkJWT, AdminRoleCheck], adminController.updatePassword);
+router.route('/updatePassword').patch(validate('body', UpdatePassValidate), [checkJWT], adminController.updatePassword);
 
 
 //Admin specific Routes
@@ -34,6 +34,8 @@ router.route('/deleteEmployee/:id').patch([checkJWT, AdminRoleCheck], adminContr
 router.route('/assignBusiness/:employeeId').post([checkJWT, AdminRoleCheck], adminController.assignBusiness);
 router.route('/uploadpic/:id?').post([checkJWT, AdminRoleCheck], adminController.uploadImg);
 router.route('/search/:keyword').post([checkJWT, AdminRoleCheck], adminController.search); //new added tested works
+
+
 //Category related routes
 router.route('/createCategory').post([checkJWT, AdminRoleCheck], adminController.createBusinessCategory);
 router.route('/updateCategory/:id').patch([checkJWT, AdminRoleCheck], adminController.updateBusinessCategory);

@@ -12,7 +12,7 @@ import { UserModel, UserSchema } from '../models/userModel';
 import { userObjectCleanUp } from '../helper/utils';
 import { sendEmailWithPassword, sendEmailWithOTP } from '../helper/sendMail';
 import uploadImage from '../helper/uploadImage';
-import { ResetPasswordRepository } from '../repository/resetPasswordRepositoy';
+import { ResetPasswordRepository } from '../repository/resetPasswordRepository';
 import { ResetPasswordSchema } from "../models/resetPasswordModel";
 import { timingSafeEqual } from 'crypto';
 
@@ -26,9 +26,6 @@ export class AdminService {
         return `GrowVix@${randomNumber}`;
     }
 
-    private generateOTP() {
-        return Math.floor(100000 + Math.random() * 900000).toString();
-    }
 
     save = async (req: Request, res: Response) => {
         try {
@@ -187,17 +184,22 @@ export class AdminService {
             const _id = req.user?.payload?.userId;
             const { oldPassword, newPassword } = req.body;
 
+
+            if (oldPassword === newPassword) {
+                return responseStatus(res, 404, msg.user.passwordShouldNotSame, null);
+            };
+
             const user = await this.mainRepository.findById(_id);
 
             if (!user) {
                 return responseStatus(res, 404, msg.user.userNotFound, null);
-            }
+            };
 
             const passwordMatch = await argon2.verify(user.password, oldPassword);
 
             if (!passwordMatch) {
                 return responseStatus(res, 401, msg.user.oldPasswordError, null);
-            }
+            };
 
             const hashedNewPassword = await argon2.hash(newPassword);
 
@@ -205,8 +207,8 @@ export class AdminService {
             const updatedUser = await this.mainRepository.updateById(_id, updateData);
 
             if (!updatedUser) {
-                return responseStatus(res, 500, msg.user.userNotFound, null);
-            }
+                return responseStatus(res, 500, 'Failed to update password', null);
+            };
 
             return responseStatus(res, 200, msg.user.PasswordChangeSuccessfully, null);
         } catch (error) {
@@ -414,88 +416,6 @@ export class AdminService {
         }
     };//tested works(populated)
 
-    sendOtpAndToken = async (req: Request, res: Response) => {
-        try {
-            const { email } = req.body;
 
-            const user = await this.mainRepository.findByEmail({ email: email });
-            if (!user) {
-                return responseStatus(res, 400, msg.user.forgotPwdError, null);
-            };
-
-            const token = jwt.sign({ userId: user._id }, jwtSignIN.secret);
-            const resetLink = `${process.env.BASE_URL}/resetPassword?token=${token}`;
-            const OTP = this.generateOTP();
-
-            const data = {
-                userId: user._id,
-                otp: OTP,
-                expireAt: new Date(Date.now() + 6 * 60 * 1000), // 6 minutes from now
-                attempt: 0
-            };
-
-            const resetData = new ResetPasswordSchema(data);
-            const savedOtp = await this.resetPasswordRepository.save(resetData);
-
-            if (!savedOtp) {
-                return responseStatus(res, 500, msg.user.otpSaveFailed, null);
-            }
-
-            const emailSent = await sendEmailWithOTP(user.email, OTP, resetLink);
-
-            if (!emailSent) {
-                return responseStatus(res, 500, msg.user.otpFailed, null);
-            };
-
-            return responseStatus(res, 200, msg.user.otpSent, null);
-        } catch (error) {
-            console.error('Error Sending OTP:', error);
-            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
-        }
-    };
-
-    verifyOtp = async (req: Request, res: Response) => {
-        try {
-            const { token, otp } = req.body;
-
-            const decoded = jwt.verify(token, jwtSignIN.secret);
-            const userId = decoded.userId;
-
-            const otpData = await this.resetPasswordRepository.findOne({ userId: userId });
-
-            if (!otpData) {
-                return responseStatus(res, 400, msg.user.forgotPwdError, null);
-            };
-            // Increment the attempt count
-            otpData.attempt += 1;
-            await otpData.save();
-
-            // Check if the OTP has exceeded the attempt limit
-            if (otpData.attempt > 3) {
-                await this.resetPasswordRepository.delete({ userId: userId });
-                return responseStatus(res, 400, msg.user.otpAttemptExceeded, null);
-            };
-
-            // Check if the OTP is expired
-            if (otpData.expireAt < new Date()) {
-                await this.resetPasswordRepository.delete({ userId: userId });
-                return responseStatus(res, 400, msg.user.otpExpired, null);
-            };
-
-
-            //better way to check to prevent timing-guess attacks
-            if (!timingSafeEqual(Buffer.from(otpData.otp), Buffer.from(otp))) {
-                return responseStatus(res, 400, msg.user.invalidOtp, null);
-            };
-            // OTP verified, delete the entry
-            await this.resetPasswordRepository.delete({ userId: userId });
-
-            return responseStatus(res, 200, msg.user.otpVerified, null);
-
-        } catch (error) {
-            console.error('Error Verifying OTP:', error);
-            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
-        }
-    };
 
 };

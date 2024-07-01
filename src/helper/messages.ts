@@ -108,7 +108,9 @@ export const msg = {
         invalidOtp: "Invalid OTP.",
         otpExpired: "OTP has expired.",
         otpAttemptExceeded: "OTP attempt limit exceeded.",
-        otpVerified: "OTP verified "
+        otpVerified: "OTP verified and Password updated successfully ",
+        otpAndPasswordNotFound: "Otp and new password is mandatory",
+        otpNotFound: "No Otp is generated/Otp expired"
     },
     role: {
         accessDenied: 'You are not authorized to access this API.',
