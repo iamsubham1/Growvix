@@ -127,7 +127,6 @@ export class UserService {
     updateAccount = async (req: Request & { user: any }, res: Response) => {
         try {
             const _id = req.user?.payload?.userId;
-            console.log(_id);
             if (!_id) {
                 return responseStatus(res, 400, msg.common.invalidRequest, null);
             }
@@ -185,7 +184,9 @@ export class UserService {
     findUserById = async (req: Request & { user: any }, res: Response) => {
         try {
             const userId = req.params.id;
-
+            if (!userId) {
+                return responseStatus(res, 400, msg.common.invalidRequest, null);
+            }
             const user = await this.mainRepository.findById(userId);
             if (user.isDeleted == false && user.type == 'Business') {
                 return responseStatus(res, 200, msg.user.userFound, user);
@@ -334,6 +335,12 @@ export class UserService {
     updatePassword = async (req: Request & { user: any }, res: Response) => {
         try {
             const _id = req.user?.payload?.userId;
+
+            if (!_id) {
+                return responseStatus(res, 400, msg.common.invalidRequest, null);
+            };
+
+
             const { oldPassword, newPassword } = req.body;
 
             const user = await this.mainRepository.findById(_id);
@@ -366,6 +373,10 @@ export class UserService {
     searchBusinessByName = async (req: Request & { user: any }, res: Response) => {
         try {
             const keyword = req.params.keyword;
+
+            if (!keyword) {
+                return responseStatus(res, 400, msg.queryParams.queryParamNotFound, null);
+            };
             const regex = new RegExp(keyword, 'i');
             const results = await this.mainRepository.findAllWithPopulate(
                 { 'business.businessName': { $regex: regex } },
@@ -393,7 +404,7 @@ export class UserService {
 
             if (!results.length) {
                 return responseStatus(res, 404, msg.user.userNotExist, null);
-            }
+            };
 
             return responseStatus(res, 200, msg.user.userFound, results);
         } catch (error) {
@@ -448,6 +459,9 @@ export class UserService {
     createTask = async (req: Request & { user: any }, res: Response) => {
         try {
             const _id = req.user?.payload?.userId;
+            if (!_id) {
+                return responseStatus(res, 400, msg.common.invalidRequest, null);
+            };
             const taskData: TaskModel = req.body;
             const newTask = await this.taskRepository.save({ ...taskData, businessId: _id });
             if (!newTask) {
@@ -463,6 +477,9 @@ export class UserService {
     getAllTasks = async (req: Request & { user: any }, res: Response) => {
         try {
             const _id = req.user?.payload?.userId;
+            if (!_id) {
+                return responseStatus(res, 400, msg.common.invalidRequest, null);
+            };
             const tasks = await this.taskRepository.findAll({ businessId: _id });
             if (!tasks.length) {
                 return responseStatus(res, 200, msg.task.fetchedSuccess, 'No tasks to show ');
@@ -478,8 +495,13 @@ export class UserService {
     };
 
     getTaskStatistics = async (req: Request & { user: any }, res: Response) => {
-        const _id = req.user?.payload?.userId;
         try {
+            const _id = req.user?.payload?.userId;
+
+            if (!_id) {
+                return responseStatus(res, 400, msg.common.invalidRequest, null);
+            };
+
             const now = new Date();
             let startDate: Date;
 

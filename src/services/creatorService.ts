@@ -30,19 +30,19 @@ export class CreatorService {
             // Validate required fields
             if (!name || !email) {
                 return responseStatus(res, 400, 'Name and email are required', null);
-            }
+            };
 
             const existingCreator = await this.mainRepository.findByEmail({ email: email });
             if (existingCreator) {
                 return responseStatus(res, 400, msg.user.userEmailExist, null);
-            }
+            };
 
             if (phoneNumber) {
                 const existingUserByPhoneNumber = await this.mainRepository.findByPhoneNumber(phoneNumber.toString());
                 if (existingUserByPhoneNumber) {
                     return responseStatus(res, 400, msg.user.userPhoneNumberExist, null);
-                }
-            }
+                };
+            };
             // Generate and hash password
             const generatedPassword = this.generatePassword();
             console.log(generatedPassword);
@@ -62,13 +62,11 @@ export class CreatorService {
 
                 }
             });
-
-
             // Save creator to database
             const newCreator = await this.mainRepository.save(newUser);
             if (!newCreator) {
                 return responseStatus(res, 500, msg.user.errorInSaving, null);
-            }
+            };
 
             // Send email with the auto-generated password
 
@@ -103,16 +101,16 @@ export class CreatorService {
                 } else {
                     return responseStatus(res, 400, msg.user.userNotFound, null);
                 }
-            }
+            };
 
             if (!user) {
                 return responseStatus(res, 400, msg.user.userNotFound, null);
-            }
+            };
 
             const passwordMatch = await argon2.verify(user.password, password);
             if (!passwordMatch) {
                 return responseStatus(res, 401, msg.user.invalidCredentials, null);
-            }
+            };
 
             const token = jwt.sign({ userId: user._id }, jwtSignIN.secret);
 
@@ -169,6 +167,9 @@ export class CreatorService {
     getCreatorById = async (req: Request, res: Response) => {
         try {
             const creatorId = req.params.id;
+            if (!creatorId) {
+                return responseStatus(res, 400, msg.common.invalidRequest, null);
+            };
 
             const creator = await this.mainRepository.findById(creatorId);
             if (creator && creator.isDeleted === false) {
@@ -313,8 +314,9 @@ export class CreatorService {
     searchByName = async (req: Request & { user: any }, res: Response) => {
         try {
             const keyword = req.params.keyword;
+
             const regex = new RegExp(keyword, 'i');
-            const results = await this.mainRepository.findAll({ name: { $regex: regex }, isDeleted: false });
+            const results = await this.mainRepository.findAll({ name: { $regex: regex }, isDeleted: false, type: 'Creator' });
 
             if (!results.length) {
                 return responseStatus(res, 404, msg.user.userNotExist, null);

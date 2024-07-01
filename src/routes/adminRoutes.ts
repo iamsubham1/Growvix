@@ -33,7 +33,8 @@ router.route('/updateEmployeeStatus').patch([checkJWT, AdminRoleCheck], adminCon
 router.route('/deleteEmployee/:id').patch([checkJWT, AdminRoleCheck], adminController.delete);
 router.route('/assignBusiness/:employeeId').post([checkJWT, AdminRoleCheck], adminController.assignBusiness);
 router.route('/uploadpic/:id?').post([checkJWT, AdminRoleCheck], adminController.uploadImg);
-router.route('/search/:keyword').post([checkJWT, AdminRoleCheck], adminController.search); //new added tested works
+router.route('/search/:keyword').post([checkJWT, AdminRoleCheck], adminController.search); //new added tested works(works for global employee name creator name , business name
+
 
 
 //Category related routes
@@ -63,7 +64,7 @@ router.route('/deleteBusiness/:id').patch([checkJWT, AdminRoleCheck], userContro
 router.route('/updateBusinessStatus/:id').patch([checkJWT, AdminRoleCheck], userController.updateStatus);
 router.route('/updateBusinessStatus').patch([checkJWT, AdminRoleCheck], userController.updateMultipleStatus);//new added tested works
 router.route('/uploadpic/business/:id').post([checkJWT, AdminRoleCheck], userController.uploadImg);
-router.route('/searchBusiness/:keyword').post([checkJWT, AdminRoleCheck], userController.searchBusiness);//new added tested works
+// router.route('/searchBusiness/:keyword').post([checkJWT, AdminRoleCheck], userController.searchBusiness);//new added tested works(works for business)
 router.route('/businessStats').get([checkJWT, AdminRoleCheck], userController.getBusinessStats);//new added tested works
 
 
@@ -79,7 +80,7 @@ router.route('/addCreator').post([checkJWT, AdminRoleCheck], validate('body', Cr
 router.route('/updateCreatorStatus/:id').patch([checkJWT, AdminRoleCheck], creatorController.updateCreatorStatus);
 router.route('/updateCreatorStatus').patch([checkJWT, AdminRoleCheck], creatorController.updateMultipleCreatorStatus);//new added tested works
 router.route('/uploadpic/creator/:id').post([checkJWT, AdminRoleCheck], creatorController.uploadCreatorImg);
-router.route('/searchCreator/:keyword').post([checkJWT, AdminRoleCheck], creatorController.searchByName);//new added tested works
+// router.route('/searchCreator/:keyword').post([checkJWT, AdminRoleCheck], creatorController.searchByName);//new added tested works(works for creator)
 router.route('/creatorStats').get([checkJWT, AdminRoleCheck], creatorController.getCreatorStats);//new added tested works
 
 

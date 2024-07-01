@@ -135,7 +135,7 @@ export class AdminController {
     search = async (req: Request & { user: any }, res: Response) => {
         try {
 
-            return await this.adminService.searchEmployeeByName(req, res);
+            return await this.adminService.globalSearch(req, res);
 
         } catch (error) {
             return responseStatus(res, 500, msg.common.somethingWentWrong, error);

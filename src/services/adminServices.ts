@@ -359,26 +359,69 @@ export class AdminService {
         }
     };//tested works
 
-    searchGlobalByName = async (req: Request & { user: any }, res: Response) => {
+    globalSearch = async (req: Request & { user: any }, res: Response) => {
         try {
             const keyword = req.params.keyword;
 
             if (!keyword) {
                 return responseStatus(res, 400, msg.queryParams.queryParamNotFound, 'Keyword parameter is missing');
             }
-            const regex = new RegExp(keyword, 'i');
-            const results = await this.mainRepository.findAll({ name: { $regex: regex }, isDeleted: false });
 
-            if (!results.length) {
+            const regex = new RegExp(keyword, 'i');
+
+            const [creators, employees, businesses] = await Promise.all([
+                // Search creators
+                this.mainRepository.findAll({ name: { $regex: regex }, isDeleted: false, type: 'Creator' }),
+
+                // Search employees
+                this.mainRepository.findAll({ name: { $regex: regex }, 'role': 'EMPLOYEE', isDeleted: false }),
+
+                // Search businesses
+                this.mainRepository.findAllWithPopulate(
+                    { 'business.businessName': { $regex: regex } },
+                    [
+                        {
+                            path: 'business.subscription',
+                            select: 'status endDate',
+                            populate: [
+                                {
+                                    path: 'plan',
+                                    select: 'name price',
+                                },
+                                {
+                                    path: 'billingType',
+                                    select: 'name',
+                                },
+                            ],
+                        },
+                        {
+                            path: 'business.businessCategory',
+                            select: 'name',
+                        },
+                    ]
+                )
+            ]);
+
+            const results = {
+                creators: creators.map(creator => ({ ...creator.toObject(), type: 'Creator' })),
+                employees: employees.map(employee => ({ ...employee.toObject(), type: 'Employee' })),
+                businesses: businesses.map(business => ({ ...business.toObject(), type: 'Business' }))
+            };
+
+            const totalResults = creators.length + employees.length + businesses.length;
+
+            if (totalResults === 0) {
                 return responseStatus(res, 404, msg.user.userNotExist, null);
             }
 
             return responseStatus(res, 200, msg.user.userFound, results);
+
         } catch (error) {
-            console.error(`Error occurred while searching for businesses: ${error.message}`);
-            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+            console.error(`Error occurred during global search: ${error.message}`);
+            return responseStatus(res, 500, msg.common.somethingWentWrong, null);
         }
-    };//tested works
+    };
+
 
     employeeDetailsWithBusiness = async (req: Request & { user: any }, res: Response) => {
         try {
