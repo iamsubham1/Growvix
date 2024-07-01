@@ -9,6 +9,8 @@ import { UserRoutes } from './routes/userRoutes';
 import { AdminRoutes } from './routes/adminRoutes';
 import { PaymentRoutes } from './routes/paymentRoutes';
 import { CreatorRoutes } from './routes/creatorRoutes';
+import { ResetPasswordRoutes } from './routes/resetPasswordRoutes';
+
 dotenv.config();
 
 const app = express();
@@ -25,6 +27,7 @@ const startServer = async () => {
     app.use('/api/user', UserRoutes);
     app.use('/api/admin', AdminRoutes);
     app.use('/api/creator', CreatorRoutes);
+    app.use('/api/resetPassword', ResetPasswordRoutes);
 
     app.use('/api/payment', PaymentRoutes);
 

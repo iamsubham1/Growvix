@@ -10,70 +10,68 @@ dotenv.config();
 import { MainRepository } from '../repository/mainRepository';
 import { UserModel, UserSchema } from '../models/userModel';
 import { userObjectCleanUp } from '../helper/utils';
-import sendEmailWithPassword from '../helper/sendMail';
+import { sendEmailWithPassword, sendEmailWithOTP } from '../helper/sendMail';
 import uploadImage from '../helper/uploadImage';
+import { ResetPasswordRepository } from '../repository/resetPasswordRepositoy';
+import { ResetPasswordSchema } from "../models/resetPasswordModel";
+import { timingSafeEqual } from 'crypto';
 
 @Service()
 export class AdminService {
-    constructor(@Inject() private mainRepository: MainRepository) { }
+    constructor(@Inject() private mainRepository: MainRepository,
+        private resetPasswordRepository: ResetPasswordRepository) { }
 
     private generatePassword(): string {
         const randomNumber = Math.floor(Math.random() * 10000);
         return `GrowVix@${randomNumber}`;
     }
 
+    private generateOTP() {
+        return Math.floor(100000 + Math.random() * 900000).toString();
+    }
+
     save = async (req: Request, res: Response) => {
         try {
             const { name, email, role } = req.body;
 
-            // Validate required fields
             if (!name || !email || !role) {
                 return responseStatus(res, 400, 'Name, email, and role are required fields.', null);
             }
 
-            // Check if user with the same email exists
             const existingUser = await this.mainRepository.findByEmail({ 'email': email });
             if (existingUser) {
                 return responseStatus(res, 400, 'User with this email already exists.', null);
             }
 
-            // Generate and hash password (if needed)
             const generatedPassword = this.generatePassword();
             console.log("generated password", generatedPassword);
             const hashedPassword = await argon2.hash(generatedPassword);
 
-            // Create new user object
             const newUser: UserModel = new UserSchema({
                 type: 'Admin',
                 name: name,
                 email: email,
                 password: hashedPassword,
-
                 isDeleted: false,
                 status: 'Active',
+                role: role === 'employee' ? 'EMPLOYEE' : role === 'admin' ? 'ADMIN' : "",
                 admin: {
-                    role: role === 'employee' ? 'EMPLOYEE' : 'ADMIN', // Assuming role mapping to enum values
-                    businessList: [], // Initialize with an empty array or default values
-                    picture: '' // Initialize with default value
+                    businessList: [],
+                    picture: ''
                 }
             });
 
-            // Save the new user
             const savedUser = await this.mainRepository.save(newUser);
 
 
-            // Check if user was saved successfully
             if (!savedUser) {
                 return responseStatus(res, 500, 'Error saving user.', null);
             }
 
-            // Send email with the auto-generated password (if needed)
             await sendEmailWithPassword(savedUser.email, generatedPassword);
 
-            // Generate JWT token
-            const token = jwt.sign({ userId: savedUser._id, role: savedUser.admin.role }, jwtSignIN.secret);
+            const token = jwt.sign({ userId: savedUser._id, role: savedUser.role }, jwtSignIN.secret);
 
-            // Send success response
             return responseStatus(res, 200, 'User saved successfully.', {
                 token: token,
                 user: savedUser,
@@ -95,7 +93,7 @@ export class AdminService {
             if (!passwordMatch) {
                 return responseStatus(res, 401, msg.user.invalidCredentials, null);
             }
-            const token = jwt.sign({ userId: user._id, role: user.admin.role }, jwtSignIN.secret);
+            const token = jwt.sign({ userId: user._id, role: user.role }, jwtSignIN.secret);
             return responseStatus(res, 200, msg.user.loggedInSuccess, {
                 token: token,
                 user: userObjectCleanUp(user),
@@ -220,7 +218,7 @@ export class AdminService {
 
         try {
             const employees = await this.mainRepository.findAllWithPopulate(
-                { 'admin.role': 'EMPLOYEE', isDeleted: false }, [{
+                { 'role': 'EMPLOYEE', isDeleted: false }, [{
                     path: 'admin.businessList',
                     select: 'name businessName subscription createdAt picture'
                 }]
@@ -235,9 +233,9 @@ export class AdminService {
                 _id: employee._id,
                 name: employee.name,
                 email: employee.email,
-                role: employee.admin?.role,
+                role: employee.role,
                 businessList: employee.admin?.businessList,
-                picture: employee.admin?.picture,
+                picture: employee.picture,
             }));
 
             return responseStatus(res, 200, msg.user.fetchedSuccessfully, sanitizedEmployees);
@@ -250,7 +248,7 @@ export class AdminService {
     getEmployeeById = async (req: Request, res: Response) => {
         const employeeId = req.params.id;
         try {
-            const employee = await this.mainRepository.findWithPopulate({ _id: employeeId, isDeleted: false, 'admin.role': 'EMPLOYEE' }, [{
+            const employee = await this.mainRepository.findWithPopulate({ _id: employeeId, isDeleted: false, 'role': 'EMPLOYEE' }, [{
                 path: 'admin.businessList',
                 select: 'name businessName subscription createdAt picture'
             }]);
@@ -346,7 +344,7 @@ export class AdminService {
                 return responseStatus(res, 400, msg.queryParams.queryParamNotFound, 'Keyword parameter is missing');
             }
             const regex = new RegExp(keyword, 'i');
-            const results = await this.mainRepository.findAll({ name: { $regex: regex }, 'admin.role': 'EMPLOYEE', isDeleted: false });
+            const results = await this.mainRepository.findAll({ name: { $regex: regex }, 'role': 'EMPLOYEE', isDeleted: false });
 
             if (!results.length) {
                 return responseStatus(res, 404, msg.user.userNotExist, null);
@@ -416,5 +414,88 @@ export class AdminService {
         }
     };//tested works(populated)
 
+    sendOtpAndToken = async (req: Request, res: Response) => {
+        try {
+            const { email } = req.body;
 
-}
+            const user = await this.mainRepository.findByEmail({ email: email });
+            if (!user) {
+                return responseStatus(res, 400, msg.user.forgotPwdError, null);
+            };
+
+            const token = jwt.sign({ userId: user._id }, jwtSignIN.secret);
+            const resetLink = `${process.env.BASE_URL}/resetPassword?token=${token}`;
+            const OTP = this.generateOTP();
+
+            const data = {
+                userId: user._id,
+                otp: OTP,
+                expireAt: new Date(Date.now() + 6 * 60 * 1000), // 6 minutes from now
+                attempt: 0
+            };
+
+            const resetData = new ResetPasswordSchema(data);
+            const savedOtp = await this.resetPasswordRepository.save(resetData);
+
+            if (!savedOtp) {
+                return responseStatus(res, 500, msg.user.otpSaveFailed, null);
+            }
+
+            const emailSent = await sendEmailWithOTP(user.email, OTP, resetLink);
+
+            if (!emailSent) {
+                return responseStatus(res, 500, msg.user.otpFailed, null);
+            };
+
+            return responseStatus(res, 200, msg.user.otpSent, null);
+        } catch (error) {
+            console.error('Error Sending OTP:', error);
+            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+        }
+    };
+
+    verifyOtp = async (req: Request, res: Response) => {
+        try {
+            const { token, otp } = req.body;
+
+            const decoded = jwt.verify(token, jwtSignIN.secret);
+            const userId = decoded.userId;
+
+            const otpData = await this.resetPasswordRepository.findOne({ userId: userId });
+
+            if (!otpData) {
+                return responseStatus(res, 400, msg.user.forgotPwdError, null);
+            };
+            // Increment the attempt count
+            otpData.attempt += 1;
+            await otpData.save();
+
+            // Check if the OTP has exceeded the attempt limit
+            if (otpData.attempt > 3) {
+                await this.resetPasswordRepository.delete({ userId: userId });
+                return responseStatus(res, 400, msg.user.otpAttemptExceeded, null);
+            };
+
+            // Check if the OTP is expired
+            if (otpData.expireAt < new Date()) {
+                await this.resetPasswordRepository.delete({ userId: userId });
+                return responseStatus(res, 400, msg.user.otpExpired, null);
+            };
+
+
+            //better way to check to prevent timing-guess attacks
+            if (!timingSafeEqual(Buffer.from(otpData.otp), Buffer.from(otp))) {
+                return responseStatus(res, 400, msg.user.invalidOtp, null);
+            };
+            // OTP verified, delete the entry
+            await this.resetPasswordRepository.delete({ userId: userId });
+
+            return responseStatus(res, 200, msg.user.otpVerified, null);
+
+        } catch (error) {
+            console.error('Error Verifying OTP:', error);
+            return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
+        }
+    };
+
+};

@@ -157,7 +157,6 @@ export class MainRepository {
         }).exec();
     }
 
-
     async countTotalCreators(): Promise<number> {
         return UserSchema.countDocuments({ isDeleted: false, type: 'Creator' }).exec();
     }

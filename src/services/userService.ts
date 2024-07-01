@@ -8,7 +8,7 @@ import { jwtSignIN } from '../configuration/config';
 import { userObjectCleanUp } from '../helper/utils';
 import * as dotenv from 'dotenv';
 import { UserModel, UserSchema } from '../models/userModel';
-import sendEmailWithPassword from '../helper/sendMail';
+import { sendEmailWithPassword } from '../helper/sendMail';
 import uploadImage from '../helper/uploadImage';
 import { TaskRepository } from '../repository/taskRepository';
 import { TaskSchema, TaskModel } from '../models/taskModel';
@@ -74,7 +74,7 @@ export class UserService {
                 return responseStatus(res, 500, msg.user.errorInSaving, null);
             };
             // Send email with the auto-generated password
-            await sendEmailWithPassword(savedUser.email, generatedPassword);
+            await sendEmailWithPassword(savedUser.email, generatedPassword, savedUser.email);
 
             const token = jwt.sign({ userId: savedUser._id }, jwtSignIN.secret);
             return responseStatus(res, 200, msg.user.userSavedSuccess, {

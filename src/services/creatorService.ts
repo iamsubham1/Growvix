@@ -6,7 +6,7 @@ import { Request, Response } from 'express';
 import { Inject, Service } from 'typedi';
 import { jwtSignIN } from '../configuration/config';
 import * as dotenv from 'dotenv';
-import sendEmailWithPassword from '../helper/sendMail';
+import { sendEmailWithPassword } from '../helper/sendMail';
 import uploadImage from '../helper/uploadImage';
 import { userObjectCleanUp } from '../helper/utils';
 import { MainRepository } from '../repository/mainRepository';
@@ -365,5 +365,5 @@ export class CreatorService {
             console.error('Error fetching creator statistics:', error);
             return responseStatus(res, 500, msg.common.somethingWentWrong, 'An unknown error occurred');
         }
-    }
+    };
 }

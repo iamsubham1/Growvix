@@ -6,7 +6,7 @@ export interface Address {
     street: string;
     city: string;
     state: string;
-}
+};
 
 export interface TokenInfo {
     facebook?: string;
@@ -39,14 +39,13 @@ export interface SocialMediaInfo {
         pages: any[];
         groups: any[];
     };
-}
-
+};
 
 export interface AdminModel extends mongoose.Document {
     role: 'ADMIN' | 'EMPLOYEE';
     businessList: mongoose.Types.ObjectId[];
     picture: string;
-}
+};
 
 export interface CreatorModel extends mongoose.Document {
     avatar: string;
@@ -58,7 +57,7 @@ export interface CreatorModel extends mongoose.Document {
     youtubeLink: string;
     facebookLink?: string;
     skills?: string[];
-}
+};
 
 export interface BusinessModel extends mongoose.Document {
     businessName: string;
@@ -73,8 +72,7 @@ export interface BusinessModel extends mongoose.Document {
     latitude?: number;
     tokens?: TokenInfo;
     socialMedia?: SocialMediaInfo;
-}
-
+};
 
 const addressSchema = new mongoose.Schema<Address>({
     street: { type: String },
@@ -144,12 +142,10 @@ const creatorSchema = new mongoose.Schema<CreatorModel>(
 
 const adminSchema = new mongoose.Schema<AdminModel>(
     {
-        role: { type: String, enum: ['ADMIN', 'EMPLOYEE'] },
         businessList: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     },
     { timestamps: true }
 );
-
 
 export interface UserModel extends mongoose.Document {
     type: 'Admin' | 'Business' | 'Creator';
@@ -161,11 +157,11 @@ export interface UserModel extends mongoose.Document {
     phoneNumber?: string;
     picture?: string;
     status: string;
+    role: string;
     admin?: AdminModel;
     business?: BusinessModel;
     creator?: CreatorModel;
 }
-
 
 const userSchema = new mongoose.Schema<UserModel>(
     {
@@ -178,6 +174,7 @@ const userSchema = new mongoose.Schema<UserModel>(
         password: { type: String },
         isDeleted: { type: Boolean },
         status: { type: String },
+        role: { type: String, enum: ['ADMIN', 'EMPLOYEE', 'CREATOR', 'BUSINESS'] },
         phoneNumber: { type: String, unique: true, sparse: true, default: null, },
         admin: adminSchema,
         business: businessSchema,

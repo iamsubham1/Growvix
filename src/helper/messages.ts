@@ -101,7 +101,14 @@ export const msg = {
         notArtist: 'You are not authorized',
         userDeletedSuccess: 'Delete Successfully',
         fetchedSuccessfully: 'Data fetched Successfully',
-        fetchFailed: 'Failed to Fetch Data'
+        fetchFailed: 'Failed to Fetch Data',
+        otpSent: 'Reset password link and OTP sent',
+        otpFailed: 'Failed to send otp',
+        otpSaveFailed: 'Failed to save otp to db',
+        invalidOtp: "Invalid OTP.",
+        otpExpired: "OTP has expired.",
+        otpAttemptExceeded: "OTP attempt limit exceeded.",
+        otpVerified: "OTP verified "
     },
     role: {
         accessDenied: 'You are not authorized to access this API.',

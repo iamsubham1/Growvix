@@ -149,7 +149,7 @@ export class AdminController {
             return responseStatus(res, 500, msg.common.somethingWentWrong, error);
 
         }
-    }
+    };
 
     getSubcriptionDetails = async (req: Request, res: Response) => {
         try {
@@ -158,7 +158,23 @@ export class AdminController {
             return responseStatus(res, 500, msg.common.somethingWentWrong, error);
 
         }
-    }
+    };
 
+    resetPasswordLinkAndOtp = async (req: Request, res: Response) => {
+        try {
+            return await this.adminService.sendOtpAndToken(req, res);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
 
+        }
+    };
+
+    verifyOtp = async (req: Request, res: Response) => {
+        try {
+            return await this.adminService.verifyOtp(req, res);
+        } catch (error) {
+            return responseStatus(res, 500, msg.common.somethingWentWrong, error);
+
+        }
+    };
 }
